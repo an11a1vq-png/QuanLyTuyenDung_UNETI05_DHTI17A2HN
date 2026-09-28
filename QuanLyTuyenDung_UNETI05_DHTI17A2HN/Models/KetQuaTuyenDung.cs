@@ -1,15 +1,14 @@
-﻿
-using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
+﻿using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class KetQua
+public class KetQuaTuyenDung
 {
     [Key]
     public int MaKetQua { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Mã hồ sơ không được để trống")]
     public int MaHoSo { get; set; }
 
     [ForeignKey("MaHoSo")]
@@ -20,9 +19,9 @@ public class KetQua
 
     public string NhanXet { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Kết quả tuyển dụng không được để trống")]
     [StringLength(50)]
-    public string TrangThaiKetQua { get; set; } 
+    public string KetQua { get; set; }
 
     [DataType(DataType.Date)]
     public DateTime NgayCapNhat { get; set; } = DateTime.Now;
