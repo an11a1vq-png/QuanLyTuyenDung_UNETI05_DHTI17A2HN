@@ -1,4 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Họ và tên: Nguyễn Tấn Dũng
+// Mã sinh viên: 23103100070
+// Nội dung thực hiện: QUẢN LÝ ỨNG VIÊN VÀ NỘP HỒ SƠ ỨNG TUYỂN
+
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models
