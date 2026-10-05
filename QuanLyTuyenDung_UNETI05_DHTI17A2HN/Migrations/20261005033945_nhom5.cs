@@ -14,10 +14,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
 {
-    /// <inheritdoc />
+
     public partial class nhom5 : Migration
     {
-        /// <inheritdoc />
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(

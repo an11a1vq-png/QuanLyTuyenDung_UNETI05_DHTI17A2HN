@@ -80,7 +80,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data
                 .HasForeignKey<KetQuaTuyenDung>(k => k.MaHoSo)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Nạp dữ liệu mẫu tự động (Seed Data chuẩn Mục 16)
             modelBuilder.SeedData();
         }
     }
