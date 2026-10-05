@@ -1,29 +1,44 @@
-﻿
+﻿using System.ComponentModel.DataAnnotations;
+
+
+namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class KetQuaTuyenDung
+public class LichPhongVan
 {
     [Key]
-    public int MaKetQua { get; set; }
+    public int MaLichPhongVan { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Mã hồ sơ không được để trống")]
     public int MaHoSo { get; set; }
 
     [ForeignKey("MaHoSo")]
     public virtual HoSoUngTuyen HoSoUngTuyen { get; set; }
 
-    [Range(0, 100, ErrorMessage = "Điểm đánh giá phải từ 0 đến 100")]
-    public double DiemDanhGia { get; set; }
+    [Required(ErrorMessage = "Thời gian bắt đầu là bắt buộc")]
+    [DataType(DataType.DateTime)]
+    public DateTime ThoiGianBatDau { get; set; }
 
-    public string NhanXet { get; set; }
+    [Required(ErrorMessage = "Thời gian kết thúc là bắt buộc")]
+    [DataType(DataType.DateTime)]
+    public DateTime ThoiGianKetThuc { get; set; }
+
+    [StringLength(100)]
+    public string HinhThucPhongVan { get; set; }
+
+    [StringLength(255)]
+    public string DiaDiemHoacLienKet { get; set; }
+
+    [Required(ErrorMessage = "Người phỏng vấn không được để trống")]
+    [StringLength(100)]
+    public string NguoiPhongVan { get; set; }
+
+    public string GhiChu { get; set; }
 
     [Required]
     [StringLength(50)]
-    public string KetQua { get; set; }
-
-    [DataType(DataType.Date)]
-    public DateTime NgayCapNhat { get; set; } = DateTime.Now;
+    public string TrangThai { get; set; } = "Đã lên lịch";
 }
