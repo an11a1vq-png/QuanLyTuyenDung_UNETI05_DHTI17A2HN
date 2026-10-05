@@ -1,4 +1,7 @@
-﻿using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
+using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
