@@ -2,7 +2,7 @@
 // Họ và tên: Đỗ Thiện An
 // Mã sinh viên: 23103100082
 // Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
-// Vai trò: Sinh viên 1 (Phụ trách Đăng nhập, Đăng xuất, Đăng ký, Quản lý tài khoản)
+// Nội dung thực hiện: Nghiệp vụ Đăng nhập, Đăng ký, Đăng xuất, Phân quyền Session và Quản lý danh sách tài khoản
 // ==============================================================================
 
 using Microsoft.AspNetCore.Mvc;
@@ -23,9 +23,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             _context = context;
         }
 
-        // GET: /TaiKhoan/Login
+        // ==============================================================================
+        // 1. ĐĂNG NHẬP HỆ THỐNG (/TaiKhoan/DangNhap hoặc /TaiKhoan/Login)
+        // ==============================================================================
         [HttpGet]
-        public IActionResult Login(string? returnUrl = null)
+        [Route("TaiKhoan/DangNhap")]
+        [Route("TaiKhoan/Login")]
+        public IActionResult DangNhap(string? returnUrl = null)
         {
             if (HttpContext.Session.IsLoggedIn())
             {
@@ -40,16 +44,18 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             return View(model);
         }
 
-        // POST: /TaiKhoan/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        [Route("TaiKhoan/DangNhap")]
+        [Route("TaiKhoan/Login")]
+        public async Task<IActionResult> DangNhap(LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
+            // Kiểm tra thông tin tài khoản bằng LINQ
             var taiKhoan = await _context.TaiKhoan
                 .Include(t => t.UngVien)
                 .FirstOrDefaultAsync(t => t.TenDangNhap == model.TenDangNhap && t.MatKhau == model.MatKhau);
@@ -60,13 +66,14 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 return View(model);
             }
 
+            // Kiểm tra trạng thái hoạt động
             if (!taiKhoan.TrangThai)
             {
-                ModelState.AddModelError(string.Empty, "Tài khoản của bạn đang bị khóa. Vui lòng liên hệ Quản trị viên.");
+                ModelState.AddModelError(string.Empty, "Tài khoản của bạn hiện đang bị khóa. Vui lòng liên hệ Quản trị viên.");
                 return View(model);
             }
 
-            // Lưu Session
+            // Lưu thông tin người dùng vào Session
             HttpContext.Session.SetUserSession(
                 taiKhoan.MaTaiKhoan,
                 taiKhoan.HoTen,
@@ -74,19 +81,33 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 taiKhoan.UngVien?.MaUngVien
             );
 
-            TempData["SuccessMessage"] = $"Đăng nhập thành công! Chào mừng {taiKhoan.HoTen} ({taiKhoan.VaiTro}).";
+            TempData["SuccessMessage"] = $"Đăng nhập thành công! Xin chào {taiKhoan.HoTen} ({taiKhoan.VaiTro}).";
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {
                 return Redirect(model.ReturnUrl);
             }
 
+            // Điều hướng theo vai trò nghiệp vụ
+            if (taiKhoan.VaiTro == "Admin")
+            {
+                return RedirectToAction("DanhSachTaiKhoan", "TaiKhoan");
+            }
+            if (taiKhoan.VaiTro == "Nhân sự")
+            {
+                return RedirectToAction("DanhSachPhongBan", "PhongBan");
+            }
+
             return RedirectToAction("Index", "Home");
         }
 
-        // GET: /TaiKhoan/Register (Đăng ký tài khoản Ứng viên mới)
+        // ==============================================================================
+        // 2. ĐĂNG KÝ TÀI KHOẢN ỨNG VIÊN (/TaiKhoan/DangKy hoặc /TaiKhoan/Register)
+        // ==============================================================================
         [HttpGet]
-        public IActionResult Register()
+        [Route("TaiKhoan/DangKy")]
+        [Route("TaiKhoan/Register")]
+        public IActionResult DangKy()
         {
             if (HttpContext.Session.IsLoggedIn())
             {
@@ -95,33 +116,34 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             return View(new RegisterViewModel());
         }
 
-        // POST: /TaiKhoan/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        [Route("TaiKhoan/DangKy")]
+        [Route("TaiKhoan/Register")]
+        public async Task<IActionResult> DangKy(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            // 1. Kiểm tra trùng tên đăng nhập
+            // 1. Kiểm tra trùng tên đăng nhập bằng LINQ
             var isUsernameExists = await _context.TaiKhoan.AnyAsync(t => t.TenDangNhap.ToLower() == model.TenDangNhap.Trim().ToLower());
             if (isUsernameExists)
             {
-                ModelState.AddModelError("TenDangNhap", "Tên đăng nhập đã tồn tại trong hệ thống. Vui lòng chọn tên khác.");
+                ModelState.AddModelError("TenDangNhap", "Tên đăng nhập này đã tồn tại trong hệ thống. Vui lòng chọn tên khác.");
                 return View(model);
             }
 
-            // 2. Kiểm tra trùng email
+            // 2. Kiểm tra trùng email bằng LINQ
             var isEmailExists = await _context.TaiKhoan.AnyAsync(t => t.Email.ToLower() == model.Email.Trim().ToLower());
             if (isEmailExists)
             {
-                ModelState.AddModelError("Email", "Email này đã được sử dụng. Vui lòng chọn email khác.");
+                ModelState.AddModelError("Email", "Email này đã được sử dụng. Vui lòng sử dụng địa chỉ email khác.");
                 return View(model);
             }
 
-            // 3. Tạo tài khoản với vai trò "Ứng viên"
+            // 3. Tạo tài khoản người dùng với vai trò "Ứng viên"
             var taiKhoan = new TaiKhoan
             {
                 TenDangNhap = model.TenDangNhap.Trim(),
@@ -135,7 +157,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             _context.TaiKhoan.Add(taiKhoan);
             await _context.SaveChangesAsync();
 
-            // 4. Tạo bản ghi hồ sơ Ứng viên rỗng tương ứng
+            // 4. Tạo hồ sơ Ứng viên rỗng tương ứng liên kết với MaTaiKhoan
             var ungVien = new UngVien
             {
                 MaTaiKhoan = taiKhoan.MaTaiKhoan,
@@ -149,13 +171,32 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Đăng ký tài khoản ứng viên thành công! Vui lòng đăng nhập để bắt đầu ứng tuyển.";
-            return RedirectToAction("Login", "TaiKhoan");
+            return RedirectToAction("DangNhap", "TaiKhoan");
         }
 
-        // GET: /TaiKhoan (Admin quản lý danh sách tài khoản)
-        [HttpGet]
-        public async Task<IActionResult> Index(string? searchString, string? vaiTro)
+        // ==============================================================================
+        // 3. ĐĂNG XUẤT HỆ THỐNG (/TaiKhoan/DangXuat hoặc /TaiKhoan/Logout)
+        // ==============================================================================
+        [HttpGet, HttpPost]
+        [Route("TaiKhoan/DangXuat")]
+        [Route("TaiKhoan/Logout")]
+        public IActionResult DangXuat()
         {
+            HttpContext.Session.ClearUserSession();
+            TempData["SuccessMessage"] = "Bạn đã đăng xuất khỏi hệ thống thành công.";
+            return RedirectToAction("DangNhap", "TaiKhoan");
+        }
+
+        // ==============================================================================
+        // 4. QUẢN TRỊ DANH SÁCH TÀI KHOẢN (/TaiKhoan/DanhSachTaiKhoan hoặc /TaiKhoan/Index)
+        // ==============================================================================
+        [HttpGet]
+        [Route("TaiKhoan/DanhSachTaiKhoan")]
+        [Route("TaiKhoan/Index")]
+        [Route("TaiKhoan")]
+        public async Task<IActionResult> DanhSachTaiKhoan(string? searchString, string? vaiTro)
+        {
+            // Kiểm tra quyền Admin tại Controller
             if (HttpContext.Session.GetVaiTro() != "Admin")
             {
                 return RedirectToAction("AccessDenied", "TaiKhoan");
@@ -165,9 +206,10 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
-                query = query.Where(t => t.TenDangNhap.Contains(searchString) || 
-                                         t.HoTen.Contains(searchString) || 
-                                         t.Email.Contains(searchString));
+                var term = searchString.Trim();
+                query = query.Where(t => t.TenDangNhap.Contains(term) ||
+                                         t.HoTen.Contains(term) ||
+                                         t.Email.Contains(term));
             }
 
             if (!string.IsNullOrWhiteSpace(vaiTro))
@@ -183,10 +225,14 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             return View(list);
         }
 
-        // POST: /TaiKhoan/ToggleTrangThai (Admin kích hoạt / khóa tài khoản)
+        // ==============================================================================
+        // 5. KHÓA / MỞ KHÓA TÀI KHOẢN (/TaiKhoan/KhoaTaiKhoan hoặc /TaiKhoan/ToggleTrangThai)
+        // ==============================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleTrangThai(int id)
+        [Route("TaiKhoan/KhoaTaiKhoan")]
+        [Route("TaiKhoan/ToggleTrangThai")]
+        public async Task<IActionResult> KhoaTaiKhoan(int id)
         {
             if (HttpContext.Session.GetVaiTro() != "Admin")
             {
@@ -196,34 +242,27 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             var currentAdminId = HttpContext.Session.GetMaTaiKhoan();
             if (id == currentAdminId)
             {
-                TempData["ErrorMessage"] = "Bạn không thể tự khóa tài khoản của chính mình.";
-                return RedirectToAction("Index");
+                TempData["ErrorMessage"] = "Bạn không thể tự khóa tài khoản Admin đang đăng nhập.";
+                return RedirectToAction("DanhSachTaiKhoan");
             }
 
             var taiKhoan = await _context.TaiKhoan.FindAsync(id);
             if (taiKhoan == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần thao tác.";
-                return RedirectToAction("Index");
+                return RedirectToAction("DanhSachTaiKhoan");
             }
 
             taiKhoan.TrangThai = !taiKhoan.TrangThai;
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = $"Đã {(taiKhoan.TrangThai ? "mở khóa" : "khóa")} tài khoản '{taiKhoan.TenDangNhap}' thành công.";
-            return RedirectToAction("Index");
+            return RedirectToAction("DanhSachTaiKhoan");
         }
 
-        // GET/POST: /TaiKhoan/Logout
-        [HttpGet, HttpPost]
-        public IActionResult Logout()
-        {
-            HttpContext.Session.ClearUserSession();
-            TempData["SuccessMessage"] = "Bạn đã đăng xuất thành công.";
-            return RedirectToAction("Login", "TaiKhoan");
-        }
-
-        // GET: /TaiKhoan/AccessDenied
+        // ==============================================================================
+        // 6. TRANG TỪ CHỐI TRUY CẬP (/TaiKhoan/AccessDenied)
+        // ==============================================================================
         [HttpGet]
         public IActionResult AccessDenied()
         {
