@@ -1,9 +1,9 @@
-﻿// Họ và tên: Nguyễn Tấn Dũng
+// Họ và tên: Nguyễn Tấn Dũng
 // Mã sinh viên: 23103100070
 // Nội dung: Module 3 - Quản lý hồ sơ cá nhân ứng viên
 using Microsoft.AspNetCore.Mvc;
-//using Microsoft.EntityFrameworkCore;
-//using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
+using Microsoft.EntityFrameworkCore;
+using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 {
