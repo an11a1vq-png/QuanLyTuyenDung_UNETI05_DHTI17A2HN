@@ -98,7 +98,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data
                 new TaiKhoan { MaTaiKhoan = 34, TenDangNhap = "ungvien29", MatKhau = "123", HoTen = "Quách Mỹ Loan", Email = "ungvien29@gmail.com", VaiTro = "Ứng viên", TrangThai = true },
                 new TaiKhoan { MaTaiKhoan = 35, TenDangNhap = "ungvien30", MatKhau = "123", HoTen = "Bạch Tiến Dũng", Email = "ungvien30@gmail.com", VaiTro = "Ứng viên", TrangThai = true }
             );
-
+             
             // 4. Seed 30 UngVien
             modelBuilder.Entity<UngVien>().HasData(
                 new UngVien { MaUngVien = 1, MaTaiKhoan = 6, HoTen = "Nguyễn Văn An", NgaySinh = new DateTime(1997, 2, 2), GioiTinh = "Nam", SoDienThoai = "0981000001", Email = "ungvien1@gmail.com", DiaChi = "Số 12, Đường Giải Phóng, Quận Hoàng Mai, Hà Nội", TrinhDoHocVan = "Đại học", ChuyenNganh = "Công nghệ thông tin", SoNamKinhNghiem = 2, KyNang = "C#, ASP.NET Core, SQL Server, Git", TrangThai = true },

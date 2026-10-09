@@ -2254,7 +2254,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             TrinhDoYeuCau = "Cao đẳng",
                             YeuCauUngVien = "Khả năng viết lách tốt, bắt trend nhanh, có tư duy hình ảnh thẩm mỹ."
                         },
-                        new
+                        new 
                         {
                             MaViTri = 11,
                             HanNopHoSo = new DateTime(2026, 12, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
