@@ -5,6 +5,7 @@
 // Nội dung thực hiện: Khởi tạo DbContext kết nối SQL Server, khai báo 7 DbSet, cấu hình Fluent API và Seed Data 50 hồ sơ mẫu theo Đề tài 13
 // ==============================================================================
 
+
 using System;
 using Microsoft.EntityFrameworkCore;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;

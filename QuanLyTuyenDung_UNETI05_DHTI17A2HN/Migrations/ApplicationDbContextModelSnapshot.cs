@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
 
+
 #nullable disable
 
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
