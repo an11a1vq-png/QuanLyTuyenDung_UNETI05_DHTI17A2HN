@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
 
@@ -11,9 +12,11 @@ using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261009092014_quanlytuyendungnhom5")]
+    partial class quanlytuyendungnhom5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
