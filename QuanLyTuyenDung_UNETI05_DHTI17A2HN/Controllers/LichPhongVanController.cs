@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
+using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,13 +24,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         // 1. Danh sách lịch phỏng vấn
         public async Task<IActionResult> Index()
         {
-            var lichPhongVans = await _context.LichPhongVans
+            var lichPhongVan = await _context.LichPhongVan
                 .Include(l => l.HoSoUngTuyen)
                 .ThenInclude(h => h.UngVien)
                 .Include(l => l.HoSoUngTuyen)
                 .ThenInclude(h => h.ViTriTuyenDung)
                 .ToListAsync();
-            return View(lichPhongVans);
+            return View(lichPhongVan);
         }
 
         // 2. GET: Tạo lịch phỏng vấn mới
@@ -41,7 +42,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             // Kiểm tra hồ sơ có tồn tại và đạt sơ tuyển không
-            var hoSo = await _context.HoSoUngTuyens
+            var hoSo = await _context.HoSoUngTuyen
                 .Include(h => h.UngVien)
                 .FirstOrDefaultAsync(h => h.MaHoSo == maHoSo);
 
@@ -82,7 +83,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             // Kiểm tra trùng khoảng thời gian phỏng vấn của Ứng viên hoặc Người phỏng vấn (trên các lịch chưa hủy)
-            var overlappingSchedule = await _context.LichPhongVans
+            var overlappingSchedule = await _context.LichPhongVan
                 .Where(l => l.TrangThai != "Đã hủy")
                 .Where(l => (l.MaHoSo == lichPhongVan.MaHoSo || l.NguoiPhongVan == lichPhongVan.NguoiPhongVan)
                             && lichPhongVan.ThoiGianBatDau < l.ThoiGianKetThuc
@@ -100,7 +101,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 _context.Add(lichPhongVan);
 
                 // Cập nhật trạng thái hồ sơ thành Chờ phỏng vấn
-                var hoSo = await _context.HoSoUngTuyens.FindAsync(lichPhongVan.MaHoSo);
+                var hoSo = await _context.HoSoUngTuyen.FindAsync(lichPhongVan.MaHoSo);
                 if (hoSo != null)
                 {
                     hoSo.TrangThai = "Chờ phỏng vấn";
@@ -117,7 +118,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         // 4. Cập nhật hoàn thành buổi phỏng vấn
         public async Task<IActionResult> HoanThanh(int id)
         {
-            var lich = await _context.LichPhongVans
+            var lich = await _context.LichPhongVan
                 .Include(l => l.HoSoUngTuyen)
                 .FirstOrDefaultAsync(l => l.MaLichPhongVan == id);
 

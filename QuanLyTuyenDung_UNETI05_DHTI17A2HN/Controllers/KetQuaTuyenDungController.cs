@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
+using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
 using System;
 using System.Threading.Tasks;
 
@@ -22,7 +23,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         // 1. Danh sách kết quả tuyển dụng
         public async Task<IActionResult> Index()
         {
-            var results = await _context.KetQuaTuyenDungs
+            var results = await _context.KetQuaTuyenDung
                 .Include(k => k.HoSoUngTuyen)
                 .ThenInclude(h => h.UngVien)
                 .Include(k => k.HoSoUngTuyen)
@@ -40,7 +41,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             // Kiểm tra điều kiện: Chỉ hồ sơ "Đã phỏng vấn" mới được ghi nhận kết quả cuối cùng
-            var hoSo = await _context.HoSoUngTuyens
+            var hoSo = await _context.HoSoUngTuyen
                 .Include(h => h.UngVien)
                 .FirstOrDefaultAsync(h => h.MaHoSo == maHoSo);
 
@@ -51,7 +52,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             // Kiểm tra nếu đã có kết quả trước đó thì chuyển sang trang Sửa
-            var existingResult = await _context.KetQuaTuyenDungs.FirstOrDefaultAsync(k => k.MaHoSo == maHoSo);
+            var existingResult = await _context.KetQuaTuyenDung.FirstOrDefaultAsync(k => k.MaHoSo == maHoSo);
             if (existingResult != null)
             {
                 return RedirectToAction(nameof(Edit), new { id = existingResult.MaKetQua });
@@ -67,7 +68,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("MaHoSo,DiemDanhGia,NhanXet,KetQua")] KetQuaTuyenDung ketQuaTuyenDung)
         {
-            bool hasResult = await _context.KetQuaTuyenDungs.AnyAsync(k => k.MaHoSo == ketQuaTuyenDung.MaHoSo);
+            bool hasResult = await _context.KetQuaTuyenDung.AnyAsync(k => k.MaHoSo == ketQuaTuyenDung.MaHoSo);
             if (hasResult)
             {
                 ModelState.AddModelError("", "Hồ sơ này đã có kết quả tuyển dụng.");
@@ -79,7 +80,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 _context.Add(ketQuaTuyenDung);
 
                 // Cập nhật trạng thái cho Hồ sơ ứng tuyển (Trúng tuyển hoặc Không trúng tuyển)
-                var hoSo = await _context.HoSoUngTuyens.FindAsync(ketQuaTuyenDung.MaHoSo);
+                var hoSo = await _context.HoSoUngTuyen.FindAsync(ketQuaTuyenDung.MaHoSo);
                 if (hoSo != null)
                 {
                     hoSo.TrangThai = ketQuaTuyenDung.KetQua;
@@ -98,7 +99,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         {
             if (id == null) return NotFound();
 
-            var ketQuaTuyenDung = await _context.KetQuaTuyenDungs
+            var ketQuaTuyenDung = await _context.KetQuaTuyenDung
                 .Include(k => k.HoSoUngTuyen)
                 .ThenInclude(h => h.UngVien)
                 .FirstOrDefaultAsync(k => k.MaKetQua == id);
@@ -121,7 +122,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 _context.Update(ketQuaTuyenDung);
 
                 // Đồng bộ lại trạng thái hồ sơ
-                var hoSo = await _context.HoSoUngTuyens.FindAsync(ketQuaTuyenDung.MaHoSo);
+                var hoSo = await _context.HoSoUngTuyen.FindAsync(ketQuaTuyenDung.MaHoSo);
                 if (hoSo != null)
                 {
                     hoSo.TrangThai = ketQuaTuyenDung.KetQua;
