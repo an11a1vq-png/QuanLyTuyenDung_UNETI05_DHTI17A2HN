@@ -24,7 +24,7 @@ public class KetQuaTuyenDung
 
     [Required(ErrorMessage = "Kết quả tuyển dụng không được để trống")]
     [StringLength(50)]
-    public string KetQua { get; set; }testc=
+    public string KetQua { get; set; }
 
     [DataType(DataType.Date)]
     public DateTime NgayCapNhat { get; set; } = DateTime.Now;
