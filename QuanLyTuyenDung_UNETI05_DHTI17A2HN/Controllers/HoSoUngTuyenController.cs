@@ -1,110 +1,132 @@
-
+// ==============================================================================
 // Họ và tên: Nguyễn Tấn Dũng
 // Mã sinh viên: 23103100070
-// Nội dung: Module 3 - Nộp hồ sơ và theo dõi ứng tuyển
+// Nội dung thực hiện: Module 3 - Nộp hồ sơ và theo dõi ứng tuyển
+// ==============================================================================
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
+
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 {
     public class HoSoUngTuyenController : Controller
     {
         private readonly ApplicationDbContext _context;
+
         public HoSoUngTuyenController(ApplicationDbContext context)
         {
             _context = context;
         }
+
         // GET: Mở form nộp hồ sơ ứng tuyển
         [HttpGet]
-        public async Task<IActionResult> Apply(int id)
+        public async Task<IActionResult> NopHoSo(int id)
         {
             var maTaiKhoanStr = HttpContext.Session.GetString("MaTaiKhoan");
             if (string.IsNullOrEmpty(maTaiKhoanStr) || !int.TryParse(maTaiKhoanStr, out int maTaiKhoan))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập với tài khoản Ứng viên để nộp hồ sơ.";
-                return RedirectToAction("Login", "TaiKhoan", new { returnUrl = Url.Action("Apply", "HoSoUngTuyen", new { id }) });
+                return RedirectToAction("DangNhap", "TaiKhoan", new { returnUrl = Url.Action("NopHoSo", "HoSoUngTuyen", new { id }) });
             }
+
             var ungVien = await _context.UngVien.FirstOrDefaultAsync(u => u.MaTaiKhoan == maTaiKhoan);
             if (ungVien == null)
             {
                 TempData["ErrorMessage"] = "Bạn cần cập nhật thông tin cá nhân trước khi nộp hồ sơ.";
-                return RedirectToAction("EditProfile", "UngVien");
+                return RedirectToAction("CapNhatHoSo", "UngVien");
             }
+
             var viTri = await _context.ViTriTuyenDung
                 .Include(v => v.PhongBan)
                 .FirstOrDefaultAsync(v => v.MaViTri == id);
+
             if (viTri == null)
             {
                 TempData["ErrorMessage"] = "Vị trí tuyển dụng không tồn tại.";
-                return RedirectToAction("Index", "ViTriTuyenDung");
+                return RedirectToAction("Index", "Home");
             }
+
             var now = DateTime.Now;
             if (viTri.TrangThai != "Đang tuyển" || now < viTri.NgayBatDauNhanHoSo || now > viTri.HanNopHoSo)
             {
                 TempData["ErrorMessage"] = "Vị trí này hiện không nhận hồ sơ (hết hạn hoặc chưa mở).";
-                return RedirectToAction("Details", "ViTriTuyenDung", new { id });
+                return RedirectToAction("Index", "Home");
             }
+
             bool daNop = await _context.HoSoUngTuyen.AnyAsync(h =>
                 h.MaUngVien == ungVien.MaUngVien &&
                 h.MaViTri == id &&
                 h.TrangThai != "Đã hủy" &&
                 h.TrangThai != "Không đạt sơ tuyển" &&
                 h.TrangThai != "Không trúng tuyển");
+
             if (daNop)
             {
                 TempData["ErrorMessage"] = "Bạn đã có hồ sơ đang xử lý cho vị trí này.";
-                return RedirectToAction("MyApplications");
+                return RedirectToAction(nameof(HoSoCuaToi));
             }
+
             ViewBag.ViTri = viTri;
             ViewBag.UngVien = ungVien;
+
             var hoSo = new HoSoUngTuyen
             {
                 MaViTri = id,
                 MaUngVien = ungVien.MaUngVien
             };
+
             return View(hoSo);
         }
+
         // POST: Xử lý lưu hồ sơ nộp
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Apply(HoSoUngTuyen model)
+        public async Task<IActionResult> NopHoSo(HoSoUngTuyen model)
         {
             var maTaiKhoanStr = HttpContext.Session.GetString("MaTaiKhoan");
             if (string.IsNullOrEmpty(maTaiKhoanStr) || !int.TryParse(maTaiKhoanStr, out int maTaiKhoan))
             {
-                return RedirectToAction("Login", "TaiKhoan");
+                return RedirectToAction("DangNhap", "TaiKhoan");
             }
+
             var ungVien = await _context.UngVien.FirstOrDefaultAsync(u => u.MaTaiKhoan == maTaiKhoan);
             if (ungVien == null)
             {
-                return RedirectToAction("EditProfile", "UngVien");
+                return RedirectToAction("CapNhatHoSo", "UngVien");
             }
+
             model.MaUngVien = ungVien.MaUngVien;
             model.NgayNop = DateTime.Now;
             model.TrangThai = "Chờ duyệt";
             model.NgayXuLy = null;
             model.NhanXetSoTuyen = null;
+
             _context.HoSoUngTuyen.Add(model);
             await _context.SaveChangesAsync();
+
             TempData["SuccessMessage"] = "Nộp hồ sơ ứng tuyển thành công!";
-            return RedirectToAction("MyApplications");
+            return RedirectToAction(nameof(HoSoCuaToi));
         }
+
         // GET: Danh sách các hồ sơ ứng viên đã nộp
         [HttpGet]
-        public async Task<IActionResult> MyApplications()
+        public async Task<IActionResult> HoSoCuaToi()
         {
             var maTaiKhoanStr = HttpContext.Session.GetString("MaTaiKhoan");
             if (string.IsNullOrEmpty(maTaiKhoanStr) || !int.TryParse(maTaiKhoanStr, out int maTaiKhoan))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để xem danh sách hồ sơ.";
-                return RedirectToAction("Login", "TaiKhoan");
+                return RedirectToAction("DangNhap", "TaiKhoan");
             }
+
             var ungVien = await _context.UngVien.FirstOrDefaultAsync(u => u.MaTaiKhoan == maTaiKhoan);
             if (ungVien == null)
             {
-                return RedirectToAction("EditProfile", "UngVien");
+                return RedirectToAction("CapNhatHoSo", "UngVien");
             }
+
             var dsHoSo = await _context.HoSoUngTuyen
                 .Include(h => h.ViTriTuyenDung)
                     .ThenInclude(v => v.PhongBan)
@@ -113,31 +135,37 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 .Where(h => h.MaUngVien == ungVien.MaUngVien)
                 .OrderByDescending(h => h.NgayNop)
                 .ToListAsync();
+
             return View(dsHoSo);
         }
+
         // POST: Hủy hồ sơ ứng tuyển
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelApplication(int id)
+        public async Task<IActionResult> HuyHoSo(int id)
         {
             var maTaiKhoanStr = HttpContext.Session.GetString("MaTaiKhoan");
             if (string.IsNullOrEmpty(maTaiKhoanStr) || !int.TryParse(maTaiKhoanStr, out int maTaiKhoan))
             {
-                return RedirectToAction("Login", "TaiKhoan");
+                return RedirectToAction("DangNhap", "TaiKhoan");
             }
+
             var ungVien = await _context.UngVien.FirstOrDefaultAsync(u => u.MaTaiKhoan == maTaiKhoan);
             if (ungVien == null)
             {
-                return RedirectToAction("Login", "TaiKhoan");
+                return RedirectToAction("DangNhap", "TaiKhoan");
             }
+
             var hoSo = await _context.HoSoUngTuyen
                 .Include(h => h.LichPhongVans)
                 .FirstOrDefaultAsync(h => h.MaHoSo == id && h.MaUngVien == ungVien.MaUngVien);
+
             if (hoSo == null)
             {
                 TempData["ErrorMessage"] = "Hồ sơ không tồn tại hoặc bạn không có quyền thao tác.";
-                return RedirectToAction("MyApplications");
+                return RedirectToAction(nameof(HoSoCuaToi));
             }
+
             bool coLichPV = hoSo.LichPhongVans != null && hoSo.LichPhongVans.Any(l => l.TrangThai != "Đã hủy");
             if (hoSo.TrangThai == "Chờ duyệt" || (hoSo.TrangThai == "Đạt sơ tuyển" && !coLichPV))
             {
@@ -149,18 +177,17 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             {
                 TempData["ErrorMessage"] = "Không thể hủy hồ sơ đã được lên lịch phỏng vấn hoặc đã có kết quả.";
             }
-            return RedirectToAction("MyApplications");
+
+            return RedirectToAction(nameof(HoSoCuaToi));
         }
+// =========================================================
+// HỌ VÀ TÊN: Nguyễn Văn Khánh
+// MÃ SINH VIÊN: 23103100101
+// MODULE 4: TIẾP NHẬN HỒ SƠ - SƠ TUYỂN - QUẢN LÝ TRẠNG THÁI
+// =========================================================
 
-
-        // =========================================================
-        // HỌ VÀ TÊN: Nguyễn Văn Khánh
-        // MÃ SINH VIÊN: 23103100101
-        // MODULE 4: TIẾP NHẬN HỒ SƠ - SƠ TUYỂN - QUẢN LÝ TRẠNG THÁI
-        // =========================================================
-
-        // GET: Nhân sự xem danh sách toàn bộ hồ sơ ứng tuyển
-        [HttpGet]
+// GET: Nhân sự xem danh sách toàn bộ hồ sơ ứng tuyển
+[HttpGet]
         public async Task<IActionResult> QuanLyDanhSach(
             string? search,
             string? phongBan,
@@ -203,7 +230,8 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             // Danh sách phòng ban phục vụ bộ lọc
             ViewBag.PhongBans = await _context.PhongBan
-                .Where(p => p.TrangThai == "Hoạt động")
+                .Where(p => p.TrangThai == true)
+                //.Where(p => p.TrangThai == "Hoạt động")
                 .OrderBy(p => p.TenPhongBan)
                 .ToListAsync();
 
