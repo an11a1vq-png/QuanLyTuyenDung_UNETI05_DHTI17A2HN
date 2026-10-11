@@ -14,35 +14,58 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         {
             _context = context;
         }
+
+        // ==========================================
+        // BẮT ĐẦU TEST LOGIN (BỎ QUA ĐĂNG NHẬP ĐỂ TEST)
+        // ==========================================
+        [HttpGet]
+        public IActionResult TestLogin()
+        {
+            // Tự động gán Session đóng vai tài khoản Ứng viên số 3
+            HttpContext.Session.SetString("MaTaiKhoan", "3");
+            HttpContext.Session.SetString("HoTen", "Ứng Viên Test UNETI");
+            HttpContext.Session.SetString("VaiTro", "Ứng viên");
+
+            TempData["SuccessMessage"] = "Đã giả lập đăng nhập thành công tài khoản Ứng viên #3!";
+            return RedirectToAction(nameof(ThongTinCaNhan));
+        }
+        // ==========================================
+        // KẾT THÚC TEST LOGIN 
+        // ==========================================
+
         // GET: Xem chi tiết thông tin hồ sơ ứng viên
         [HttpGet]
-        public async Task<IActionResult> Details()
+        public async Task<IActionResult> ThongTinCaNhan()
         {
             var maTaiKhoanStr = HttpContext.Session.GetString("MaTaiKhoan");
             if (string.IsNullOrEmpty(maTaiKhoanStr) || !int.TryParse(maTaiKhoanStr, out int maTaiKhoan))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để xem thông tin.";
-                return RedirectToAction("Login", "TaiKhoan");
+                return RedirectToAction("DangNhap", "TaiKhoan");
             }
+
             var ungVien = await _context.UngVien
                 .Include(u => u.TaiKhoan)
                 .FirstOrDefaultAsync(u => u.MaTaiKhoan == maTaiKhoan);
+
             if (ungVien == null)
             {
-                return RedirectToAction("EditProfile");
+                return RedirectToAction(nameof(CapNhatHoSo));
             }
+
             return View(ungVien);
         }
         // GET: Giao diện cập nhật hồ sơ
         [HttpGet]
-        public async Task<IActionResult> EditProfile()
+        public async Task<IActionResult> CapNhatHoSo()
         {
             var maTaiKhoanStr = HttpContext.Session.GetString("MaTaiKhoan");
             if (string.IsNullOrEmpty(maTaiKhoanStr) || !int.TryParse(maTaiKhoanStr, out int maTaiKhoan))
             {
                 TempData["ErrorMessage"] = "Vui lòng đăng nhập để cập nhật hồ sơ.";
-                return RedirectToAction("Login", "TaiKhoan");
+                return RedirectToAction("DangNhap", "TaiKhoan");
             }
+
             var ungVien = await _context.UngVien.FirstOrDefaultAsync(u => u.MaTaiKhoan == maTaiKhoan);
             if (ungVien == null)
             {
@@ -55,31 +78,33 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                     TrangThai = true
                 };
             }
+
             return View(ungVien);
         }
+
         // POST: Lưu thông tin hồ sơ cập nhật
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProfile(UngVien model)
+        public async Task<IActionResult> CapNhatHoSo(UngVien model)
         {
             var maTaiKhoanStr = HttpContext.Session.GetString("MaTaiKhoan");
             if (string.IsNullOrEmpty(maTaiKhoanStr) || !int.TryParse(maTaiKhoanStr, out int maTaiKhoan))
             {
-                return RedirectToAction("Login", "TaiKhoan");
+                return RedirectToAction("DangNhap", "TaiKhoan");
             }
-            model.MaTaiKhoan = maTaiKhoan;
+
+            // KIỂM TRA VALIDATION DỮ LIỆU ĐẦU VÀO
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
-            if (model.SoNamKinhNghiem < 0)
-            {
-                ModelState.AddModelError("SoNamKinhNghiem", "Số năm kinh nghiệm phải >= 0.");
-                return View(model);
-            }
+
             var ungVienExist = await _context.UngVien.FirstOrDefaultAsync(u => u.MaTaiKhoan == maTaiKhoan);
+
             if (ungVienExist == null)
             {
+                model.MaTaiKhoan = maTaiKhoan;
+                model.TrangThai = true;
                 _context.UngVien.Add(model);
             }
             else
@@ -94,16 +119,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 ungVienExist.ChuyenNganh = model.ChuyenNganh;
                 ungVienExist.SoNamKinhNghiem = model.SoNamKinhNghiem;
                 ungVienExist.KyNang = model.KyNang;
+
                 _context.UngVien.Update(ungVienExist);
             }
+
             await _context.SaveChangesAsync();
-            var uv = await _context.UngVien.FirstOrDefaultAsync(u => u.MaTaiKhoan == maTaiKhoan);
-            if (uv != null)
-            {
-                HttpContext.Session.SetString("MaUngVien", uv.MaUngVien.ToString());
-            }
             TempData["SuccessMessage"] = "Cập nhật hồ sơ cá nhân thành công!";
-            return RedirectToAction("Details");
+            return RedirectToAction(nameof(ThongTinCaNhan));
         }
     }
 }
