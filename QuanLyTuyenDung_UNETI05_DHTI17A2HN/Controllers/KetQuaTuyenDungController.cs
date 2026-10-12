@@ -94,6 +94,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             return View(ketQuaTuyenDung);
         }
 
+
         // 4. GET: Chỉnh sửa kết quả
         public async Task<IActionResult> Edit(int? id)
         {

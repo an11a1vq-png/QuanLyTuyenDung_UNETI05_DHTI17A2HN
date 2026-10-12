@@ -33,6 +33,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             return View(lichPhongVan);
         }
 
+
         // 2. GET: Tạo lịch phỏng vấn mới
         public async Task<IActionResult> Create(int? maHoSo)
         {
