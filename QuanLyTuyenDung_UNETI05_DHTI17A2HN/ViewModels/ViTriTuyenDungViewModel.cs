@@ -8,10 +8,25 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Linq.Expressions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
 
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
 {
+    // HẰNG SỐ TRẠNG THÁI DÙNG CHUNG (tránh gõ sai chuỗi ở nhiều nơi)
+    public static class TrangThaiTuyenDung
+    {
+        // Trạng thái vị trí
+        public const string DangTuyen = "Đang tuyển";
+
+        // Trạng thái hồ sơ
+        public const string TrungTuyen = "Trúng tuyển";
+    }
+
     // VIEWMODEL: DÙNG CHO FORM THÊM MỚI / CẬP NHẬT VỊ TRÍ TUYỂN DỤNG
     public class ViTriTuyenDungFormViewModel : IValidatableObject
     {
@@ -23,12 +38,10 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         [Display(Name = "Tên vị trí")]
         public string TenViTri { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Vui lòng chọn phòng ban")]
         [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn phòng ban")]
         [Display(Name = "Phòng ban")]
         public int MaPhongBan { get; set; }
 
-        [Required(ErrorMessage = "Số lượng cần tuyển không được để trống")]
         [Range(1, 1000, ErrorMessage = "Số lượng cần tuyển từ 1 đến 1000")]
         [Display(Name = "Số lượng cần tuyển")]
         public int SoLuongCanTuyen { get; set; } = 1;
@@ -37,17 +50,14 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         [Display(Name = "Trình độ yêu cầu")]
         public string? TrinhDoYeuCau { get; set; }
 
-        [Required(ErrorMessage = "Số năm kinh nghiệm không được để trống")]
         [Range(0, 50, ErrorMessage = "Số năm kinh nghiệm từ 0 đến 50")]
         [Display(Name = "Kinh nghiệm tối thiểu (năm)")]
         public int SoNamKinhNghiemToiThieu { get; set; }
 
-        [Required(ErrorMessage = "Ngày bắt đầu nhận hồ sơ không được để trống")]
         [DataType(DataType.Date)]
         [Display(Name = "Ngày bắt đầu nhận hồ sơ")]
         public DateTime NgayBatDauNhanHoSo { get; set; } = DateTime.Today;
 
-        [Required(ErrorMessage = "Hạn nộp hồ sơ không được để trống")]
         [DataType(DataType.Date)]
         [Display(Name = "Hạn nộp hồ sơ")]
         public DateTime HanNopHoSo { get; set; } = DateTime.Today.AddDays(30);
@@ -63,19 +73,26 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         [Required(ErrorMessage = "Vui lòng chọn trạng thái")]
         [StringLength(30)]
         [Display(Name = "Trạng thái")]
-        public string TrangThai { get; set; } = "Đang tuyển";
+        public string TrangThai { get; set; } = TrangThaiTuyenDung.DangTuyen;
 
-        // Số hồ sơ đã trúng tuyển (chỉ dùng khi cập nhật, để chặn giảm chỉ tiêu quá mức)
+        // Số hồ sơ đã trúng tuyển: controller tự đếm từ CSDL,
+        // [BindNever] để client không thể gửi giá trị giả lên qua form
+        [BindNever]
         public int SoDaTrungTuyen { get; set; }
 
         public bool LaCapNhat => MaViTri > 0;
 
-        // Dữ liệu cho các dropdown (controller nạp lại khi trả view)
-        public IEnumerable<SelectListItem> DanhSachPhongBan { get; set; } = new List<SelectListItem>();
-        public IEnumerable<SelectListItem> DanhSachTrinhDo { get; set; } = new List<SelectListItem>();
-        public IEnumerable<SelectListItem> DanhSachTrangThai { get; set; } = new List<SelectListItem>();
+        // Dữ liệu cho các dropdown: không bind từ form, không validate
+        [BindNever, ValidateNever]
+        public IEnumerable<SelectListItem> DanhSachPhongBan { get; set; } = Enumerable.Empty<SelectListItem>();
 
-        // Kiểm tra ràng buộc giữa các trường
+        [BindNever, ValidateNever]
+        public IEnumerable<SelectListItem> DanhSachTrinhDo { get; set; } = Enumerable.Empty<SelectListItem>();
+
+        [BindNever, ValidateNever]
+        public IEnumerable<SelectListItem> DanhSachTrangThai { get; set; } = Enumerable.Empty<SelectListItem>();
+
+        // Kiểm tra ràng buộc giữa các trường và danh mục cố định
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (HanNopHoSo.Date < NgayBatDauNhanHoSo.Date)
@@ -85,17 +102,70 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
                     new[] { nameof(HanNopHoSo) });
             }
 
+            if (!string.IsNullOrEmpty(TrinhDoYeuCau) && !ViTriTuyenDung.DanhSachTrinhDo.Contains(TrinhDoYeuCau))
+            {
+                yield return new ValidationResult("Trình độ không hợp lệ", new[] { nameof(TrinhDoYeuCau) });
+            }
+
+            if (!ViTriTuyenDung.DanhSachTrangThai.Contains(TrangThai))
+            {
+                yield return new ValidationResult("Trạng thái không hợp lệ", new[] { nameof(TrangThai) });
+            }
+        }
+
+        // Validate() chạy lúc model binding, khi SoDaTrungTuyen chưa có giá trị.
+        // Controller gán SoDaTrungTuyen (đếm từ CSDL) rồi gọi hàm này trước khi kiểm tra ModelState.IsValid
+        public void KiemTraChiTieu(ModelStateDictionary modelState)
+        {
             if (LaCapNhat && SoLuongCanTuyen < SoDaTrungTuyen)
             {
-                yield return new ValidationResult(
-                    $"Số lượng cần tuyển không được nhỏ hơn số người đã trúng tuyển ({SoDaTrungTuyen})",
-                    new[] { nameof(SoLuongCanTuyen) });
+                modelState.AddModelError(nameof(SoLuongCanTuyen),
+                    $"Số lượng cần tuyển không được nhỏ hơn số người đã trúng tuyển ({SoDaTrungTuyen})");
             }
+        }
+
+        // Nạp sẵn dropdown trình độ / trạng thái (phòng ban do controller truy vấn CSDL)
+        public void NapDanhMucCoDinh()
+        {
+            DanhSachTrinhDo = new SelectList(ViTriTuyenDung.DanhSachTrinhDo, TrinhDoYeuCau);
+            DanhSachTrangThai = new SelectList(ViTriTuyenDung.DanhSachTrangThai, TrangThai);
+        }
+
+        // Entity -> ViewModel (màn hình cập nhật)
+        public static ViTriTuyenDungFormViewModel TuEntity(ViTriTuyenDung v, int soDaTrungTuyen = 0) => new()
+        {
+            MaViTri = v.MaViTri,
+            TenViTri = v.TenViTri,
+            MaPhongBan = v.MaPhongBan,
+            SoLuongCanTuyen = v.SoLuongCanTuyen,
+            TrinhDoYeuCau = v.TrinhDoYeuCau,
+            SoNamKinhNghiemToiThieu = v.SoNamKinhNghiemToiThieu,
+            NgayBatDauNhanHoSo = v.NgayBatDauNhanHoSo,
+            HanNopHoSo = v.HanNopHoSo,
+            MoTaCongViec = v.MoTaCongViec,
+            YeuCauUngVien = v.YeuCauUngVien,
+            TrangThai = v.TrangThai,
+            SoDaTrungTuyen = soDaTrungTuyen
+        };
+
+        // ViewModel -> Entity (thêm mới và cập nhật). Không đụng tới MaViTri và navigation
+        public void GanVaoEntity(ViTriTuyenDung v)
+        {
+            v.TenViTri = TenViTri.Trim();
+            v.MaPhongBan = MaPhongBan;
+            v.SoLuongCanTuyen = SoLuongCanTuyen;
+            v.TrinhDoYeuCau = string.IsNullOrWhiteSpace(TrinhDoYeuCau) ? null : TrinhDoYeuCau;
+            v.SoNamKinhNghiemToiThieu = SoNamKinhNghiemToiThieu;
+            v.NgayBatDauNhanHoSo = NgayBatDauNhanHoSo.Date;
+            v.HanNopHoSo = HanNopHoSo.Date;
+            v.MoTaCongViec = MoTaCongViec.Trim();
+            v.YeuCauUngVien = YeuCauUngVien.Trim();
+            v.TrangThai = TrangThai;
         }
     }
 
-    // VIEWMODEL: MỘT DÒNG TRONG DANH SÁCH VỊ TRÍ TUYỂN DỤNG
-    public class ViTriTuyenDungItemViewModel
+    // LỚP CƠ SỞ: CÁC TRƯỜNG VÀ THUỘC TÍNH TÍNH TOÁN DÙNG CHUNG CHO DANH SÁCH VÀ CHI TIẾT
+    public abstract class ViTriTomTatViewModel
     {
         public int MaViTri { get; set; }
 
@@ -105,16 +175,16 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         [Display(Name = "Phòng ban")]
         public string TenPhongBan { get; set; } = string.Empty;
 
-        [Display(Name = "Trình độ")]
+        [Display(Name = "Trình độ yêu cầu")]
         public string? TrinhDoYeuCau { get; set; }
 
-        [Display(Name = "Kinh nghiệm (năm)")]
+        [Display(Name = "Kinh nghiệm tối thiểu (năm)")]
         public int SoNamKinhNghiemToiThieu { get; set; }
 
         [Display(Name = "Số lượng cần tuyển")]
         public int SoLuongCanTuyen { get; set; }
 
-        [Display(Name = "Ngày bắt đầu")]
+        [Display(Name = "Ngày bắt đầu nhận hồ sơ")]
         [DataType(DataType.Date)]
         public DateTime NgayBatDauNhanHoSo { get; set; }
 
@@ -136,15 +206,49 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
 
         public bool DaDuChiTieu => SoDaTrungTuyen >= SoLuongCanTuyen;
 
-        public bool CoTheUngTuyen => TrangThai == "Đang tuyển" && ConHan && !DaDuChiTieu;
+        public bool CoTheUngTuyen => TrangThai == TrangThaiTuyenDung.DangTuyen && ConHan && !DaDuChiTieu;
 
         public int SoNgayConLai => Math.Max(0, (HanNopHoSo.Date - DateTime.Today).Days);
+
+        public int SoLuongConLai => Math.Max(0, SoLuongCanTuyen - SoDaTrungTuyen);
+
+        // Class CSS badge Bootstrap theo trạng thái, để view không phải viết switch
+        public string BadgeTrangThai => TrangThai switch
+        {
+            "Đang tuyển" => "bg-success",
+            "Tạm dừng" => "bg-warning text-dark",
+            "Đã đóng" => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+    }
+
+    // VIEWMODEL: MỘT DÒNG TRONG DANH SÁCH VỊ TRÍ TUYỂN DỤNG
+    public class ViTriTuyenDungItemViewModel : ViTriTomTatViewModel
+    {
+        // Biểu thức chiếu cho EF: dùng trong .Select(...) để COUNT chạy dưới SQL,
+        // không phải Include toàn bộ hồ sơ về bộ nhớ
+        public static readonly Expression<Func<ViTriTuyenDung, ViTriTuyenDungItemViewModel>> Projection = v => new ViTriTuyenDungItemViewModel
+        {
+            MaViTri = v.MaViTri,
+            TenViTri = v.TenViTri,
+            TenPhongBan = v.PhongBan != null ? v.PhongBan.TenPhongBan : string.Empty,
+            TrinhDoYeuCau = v.TrinhDoYeuCau,
+            SoNamKinhNghiemToiThieu = v.SoNamKinhNghiemToiThieu,
+            SoLuongCanTuyen = v.SoLuongCanTuyen,
+            NgayBatDauNhanHoSo = v.NgayBatDauNhanHoSo,
+            HanNopHoSo = v.HanNopHoSo,
+            TrangThai = v.TrangThai,
+            SoHoSoDaNop = v.HoSoUngTuyens.Count(),
+            SoDaTrungTuyen = v.HoSoUngTuyens.Count(h => h.TrangThai == TrangThaiTuyenDung.TrungTuyen)
+        };
     }
 
     // VIEWMODEL: TRANG DANH SÁCH VỊ TRÍ (CÓ TÌM KIẾM, LỌC, PHÂN TRANG)
     public class DanhSachViTriViewModel
     {
-        public List<ViTriTuyenDungItemViewModel> Items { get; set; } = new List<ViTriTuyenDungItemViewModel>();
+        public const int SoBanGhiMacDinh = 10;
+
+        public IReadOnlyList<ViTriTuyenDungItemViewModel> Items { get; set; } = Array.Empty<ViTriTuyenDungItemViewModel>();
 
         // Bộ lọc
         [Display(Name = "Tìm kiếm")]
@@ -159,83 +263,88 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         [Display(Name = "Trình độ")]
         public string? TrinhDo { get; set; }
 
+        public bool DangLoc => !string.IsNullOrWhiteSpace(SearchString) || MaPhongBan.HasValue
+                               || !string.IsNullOrEmpty(TrangThai) || !string.IsNullOrEmpty(TrinhDo);
+
         // Dữ liệu cho các dropdown lọc
-        public IEnumerable<SelectListItem> DanhSachPhongBan { get; set; } = new List<SelectListItem>();
-        public IEnumerable<SelectListItem> DanhSachTrangThai { get; set; } = new List<SelectListItem>();
-        public IEnumerable<SelectListItem> DanhSachTrinhDo { get; set; } = new List<SelectListItem>();
+        public IEnumerable<SelectListItem> DanhSachPhongBan { get; set; } = Enumerable.Empty<SelectListItem>();
+        public IEnumerable<SelectListItem> DanhSachTrangThai { get; set; } = Enumerable.Empty<SelectListItem>();
+        public IEnumerable<SelectListItem> DanhSachTrinhDo { get; set; } = Enumerable.Empty<SelectListItem>();
 
         // Phân trang
+        private int _soBanGhiMoiTrang = SoBanGhiMacDinh;
+        public int SoBanGhiMoiTrang
+        {
+            get => _soBanGhiMoiTrang;
+            set => _soBanGhiMoiTrang = value > 0 ? value : SoBanGhiMacDinh; // tránh chia cho 0
+        }
+
         public int TrangHienTai { get; set; } = 1;
-        public int SoBanGhiMoiTrang { get; set; } = 10;
         public int TongSoBanGhi { get; set; }
-        public int TongSoTrang => (int)Math.Ceiling((double)TongSoBanGhi / SoBanGhiMoiTrang);
+        public int TongSoTrang => (TongSoBanGhi + SoBanGhiMoiTrang - 1) / SoBanGhiMoiTrang;
         public bool CoTrangTruoc => TrangHienTai > 1;
         public bool CoTrangSau => TrangHienTai < TongSoTrang;
+
+        // Số bản ghi cần bỏ qua khi truy vấn: query.Skip(model.BoQua).Take(model.SoBanGhiMoiTrang)
+        public int BoQua => (TrangHienTai - 1) * SoBanGhiMoiTrang;
+
+        // Gọi sau khi đã gán TongSoBanGhi, để trang yêu cầu luôn nằm trong khoảng hợp lệ
+        public void ChuanHoaTrang(int trangYeuCau)
+        {
+            TrangHienTai = Math.Clamp(trangYeuCau, 1, Math.Max(1, TongSoTrang));
+        }
+
+        // Nạp sẵn dropdown trình độ / trạng thái (phòng ban do controller truy vấn CSDL)
+        public void NapDanhMucCoDinh()
+        {
+            DanhSachTrangThai = new SelectList(ViTriTuyenDung.DanhSachTrangThai, TrangThai);
+            DanhSachTrinhDo = new SelectList(ViTriTuyenDung.DanhSachTrinhDo, TrinhDo);
+        }
     }
 
     // VIEWMODEL: TRANG CHI TIẾT VỊ TRÍ TUYỂN DỤNG
-    public class ChiTietViTriViewModel
+    public class ChiTietViTriViewModel : ViTriTomTatViewModel
     {
-        public int MaViTri { get; set; }
-
-        [Display(Name = "Tên vị trí")]
-        public string TenViTri { get; set; } = string.Empty;
-
-        [Display(Name = "Số lượng cần tuyển")]
-        public int SoLuongCanTuyen { get; set; }
-
-        [Display(Name = "Trình độ yêu cầu")]
-        public string? TrinhDoYeuCau { get; set; }
-
-        [Display(Name = "Kinh nghiệm tối thiểu (năm)")]
-        public int SoNamKinhNghiemToiThieu { get; set; }
-
-        [Display(Name = "Ngày bắt đầu nhận hồ sơ")]
-        [DataType(DataType.Date)]
-        public DateTime NgayBatDauNhanHoSo { get; set; }
-
-        [Display(Name = "Hạn nộp hồ sơ")]
-        [DataType(DataType.Date)]
-        public DateTime HanNopHoSo { get; set; }
-
         [Display(Name = "Mô tả công việc")]
         public string MoTaCongViec { get; set; } = string.Empty;
 
         [Display(Name = "Yêu cầu ứng viên")]
         public string YeuCauUngVien { get; set; } = string.Empty;
 
-        [Display(Name = "Trạng thái")]
-        public string TrangThai { get; set; } = string.Empty;
-
         // Thông tin phòng ban
         public int MaPhongBan { get; set; }
-
-        [Display(Name = "Phòng ban")]
-        public string TenPhongBan { get; set; } = string.Empty;
 
         [Display(Name = "Email liên hệ")]
         public string? EmailLienHe { get; set; }
 
         // Thống kê hồ sơ (dành cho Admin / Nhân sự)
-        [Display(Name = "Tổng số hồ sơ")]
-        public int TongSoHoSo { get; set; }
-
-        [Display(Name = "Đã trúng tuyển")]
-        public int SoDaTrungTuyen { get; set; }
-
         // Key: trạng thái hồ sơ (Chờ duyệt, Đạt sơ tuyển, ...), Value: số lượng
-        public Dictionary<string, int> ThongKeTheoTrangThai { get; set; } = new Dictionary<string, int>();
+        public IReadOnlyDictionary<string, int> ThongKeTheoTrangThai { get; set; } = new Dictionary<string, int>();
 
-        // Thông tin cho ứng viên đang đăng nhập
+        // Ứng viên đang đăng nhập đã có hồ sơ còn hiệu lực cho vị trí này chưa
         public bool DaUngTuyen { get; set; }
 
-        // --- THUỘC TÍNH TÍNH TOÁN ---
-        public bool ConHan => DateTime.Today >= NgayBatDauNhanHoSo.Date && DateTime.Today <= HanNopHoSo.Date;
+        // Hiển thị nút "Ứng tuyển" khi vị trí còn nhận hồ sơ và ứng viên chưa nộp
+        public bool HienNutUngTuyen => CoTheUngTuyen && !DaUngTuyen;
 
-        public bool DaDuChiTieu => SoDaTrungTuyen >= SoLuongCanTuyen;
-
-        public bool CoTheUngTuyen => TrangThai == "Đang tuyển" && ConHan && !DaDuChiTieu;
-
-        public int SoLuongConLai => Math.Max(0, SoLuongCanTuyen - SoDaTrungTuyen);
+        // Biểu thức chiếu cho EF (giống ViTriTuyenDungItemViewModel.Projection)
+        public static readonly Expression<Func<ViTriTuyenDung, ChiTietViTriViewModel>> Projection = v => new ChiTietViTriViewModel
+        {
+            MaViTri = v.MaViTri,
+            TenViTri = v.TenViTri,
+            TenPhongBan = v.PhongBan != null ? v.PhongBan.TenPhongBan : string.Empty,
+            TrinhDoYeuCau = v.TrinhDoYeuCau,
+            SoNamKinhNghiemToiThieu = v.SoNamKinhNghiemToiThieu,
+            SoLuongCanTuyen = v.SoLuongCanTuyen,
+            NgayBatDauNhanHoSo = v.NgayBatDauNhanHoSo,
+            HanNopHoSo = v.HanNopHoSo,
+            TrangThai = v.TrangThai,
+            SoHoSoDaNop = v.HoSoUngTuyens.Count(),
+            SoDaTrungTuyen = v.HoSoUngTuyens.Count(h => h.TrangThai == TrangThaiTuyenDung.TrungTuyen),
+            MoTaCongViec = v.MoTaCongViec,
+            YeuCauUngVien = v.YeuCauUngVien,
+            MaPhongBan = v.MaPhongBan,
+            EmailLienHe = v.PhongBan != null ? v.PhongBan.EmailLienHe : null
+        };
     }
 }
