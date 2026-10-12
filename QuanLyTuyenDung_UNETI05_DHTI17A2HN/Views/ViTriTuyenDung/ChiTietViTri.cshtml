@@ -1,0 +1,205 @@
+@*
+    Họ và tên: Lê Gia Bảo
+    Mã sinh viên: 23103100100
+    Module: 2 - Quản lý vị trí tuyển dụng
+    Nội dung: Màn hình chi tiết vị trí tuyển dụng (ứng viên xem và ứng tuyển, Admin / Nhân sự xem thống kê hồ sơ)
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.ChiTietViTriViewModel
+@using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Helpers
+@using QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
+
+@{
+    ViewData["Title"] = Model.TenViTri;
+    var vaiTro = Context.Session.GetVaiTro();
+    var laQuanLy = vaiTro == "Admin" || vaiTro == "Nhân sự";
+
+    // Tách nội dung nhiều dòng thành danh sách gạch đầu dòng
+    string[] TachDong(string s) => s.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    // Thứ tự hiển thị thống kê theo quy trình xử lý hồ sơ
+    var thuTuTrangThaiHoSo = new[]
+    {
+        (TrangThaiTuyenDung.ChoDuyet, "bg-secondary"),
+        (TrangThaiTuyenDung.DatSoTuyen, "bg-info text-dark"),
+        (TrangThaiTuyenDung.DaPhongVan, "bg-primary"),
+        (TrangThaiTuyenDung.TrungTuyen, "bg-success"),
+        (TrangThaiTuyenDung.KhongDatSoTuyen, "bg-warning text-dark"),
+        (TrangThaiTuyenDung.KhongTrungTuyen, "bg-danger"),
+        (TrangThaiTuyenDung.DaHuy, "bg-light text-dark border")
+    };
+}
+
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            @if (laQuanLy)
+            {
+                <li class="breadcrumb-item"><a asp-action="DanhSachViTri">Quản lý vị trí</a></li>
+            }
+            else
+            {
+                <li class="breadcrumb-item"><a asp-action="ViecLam">Việc làm</a></li>
+            }
+            <li class="breadcrumb-item active" aria-current="page">@Model.TenViTri</li>
+        </ol>
+    </nav>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="row g-4">
+        @* ---------- CỘT TRÁI: NỘI DUNG ---------- *@
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <h3 class="fw-bold mb-1">@Model.TenViTri</h3>
+                            <div class="text-muted"><i class="bi bi-building"></i> @Model.TenPhongBan</div>
+                        </div>
+                        <span class="badge fs-6 @Model.BadgeTrangThai">@Model.TrangThai</span>
+                    </div>
+
+                    <hr />
+
+                    <div class="row text-center g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="small text-muted">@Html.DisplayNameFor(m => m.SoLuongCanTuyen)</div>
+                            <div class="fw-semibold">@Model.SoLuongCanTuyen người</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="small text-muted">@Html.DisplayNameFor(m => m.TrinhDoYeuCau)</div>
+                            <div class="fw-semibold">@(Model.TrinhDoYeuCau ?? "Không yêu cầu")</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="small text-muted">Kinh nghiệm</div>
+                            <div class="fw-semibold">@(Model.SoNamKinhNghiemToiThieu > 0 ? $"Từ {Model.SoNamKinhNghiemToiThieu} năm" : "Không yêu cầu")</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="small text-muted">@Html.DisplayNameFor(m => m.HanNopHoSo)</div>
+                            <div class="fw-semibold @(Model.SapHetHan ? "text-danger" : "")">@Model.HanNopHoSo.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold text-primary"><i class="bi bi-list-task"></i> @Html.DisplayNameFor(m => m.MoTaCongViec)</h5>
+                    <ul class="mb-0">
+                        @foreach (var dong in TachDong(Model.MoTaCongViec))
+                        {
+                            <li>@dong</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="fw-bold text-primary"><i class="bi bi-person-check"></i> @Html.DisplayNameFor(m => m.YeuCauUngVien)</h5>
+                    <ul class="mb-0">
+                        @foreach (var dong in TachDong(Model.YeuCauUngVien))
+                        {
+                            <li>@dong</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        @* ---------- CỘT PHẢI: HÀNH ĐỘNG / THỐNG KÊ ---------- *@
+        <div class="col-lg-4">
+            @if (laQuanLy)
+            {
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart"></i> Thống kê hồ sơ</h5>
+
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Đã tuyển</span>
+                            <strong>@Model.SoDaTrungTuyen / @Model.SoLuongCanTuyen</strong>
+                        </div>
+                        <div class="progress mb-3" style="height: 8px;" role="progressbar" aria-label="Tỷ lệ hoàn thành chỉ tiêu"
+                             aria-valuenow="@Model.TyLeHoanThanh" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-success" style="width: @Model.TyLeHoanThanh%"></div>
+                        </div>
+
+                        <ul class="list-group list-group-flush mb-3">
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span>Tổng số hồ sơ</span><strong>@Model.SoHoSoDaNop</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0">
+                                <span>Đang xử lý</span><strong>@Model.SoHoSoDangXuLy</strong>
+                            </li>
+                            @foreach (var (trangThai, badge) in thuTuTrangThaiHoSo)
+                            {
+                                var soLuong = Model.SoHoSo(trangThai);
+                                if (soLuong == 0) continue;
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span class="badge @badge">@trangThai</span><span>@soLuong</span>
+                                </li>
+                            }
+                        </ul>
+
+                        <a asp-controller="HoSoUngTuyen" asp-action="QuanLyDanhSach" asp-route-search="@Model.TenViTri"
+                           class="btn btn-outline-primary w-100 mb-2">
+                            <i class="bi bi-folder2-open"></i> Xem hồ sơ ứng tuyển
+                        </a>
+                        <a asp-action="CapNhatViTri" asp-route-id="@Model.MaViTri" class="btn btn-warning w-100">
+                            <i class="bi bi-pencil"></i> Cập nhật vị trí
+                        </a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm border-0 mb-4 sticky-lg-top" style="top: 1rem;">
+                    <div class="card-body">
+                        @if (Model.HienNutUngTuyen)
+                        {
+                            <p class="small text-muted mb-2">
+                                Còn <strong>@Model.SoNgayConLai</strong> ngày để nộp hồ sơ
+                                · Cần thêm <strong>@Model.SoLuongConLai</strong> người
+                            </p>
+                            <a asp-controller="HoSoUngTuyen" asp-action="NopHoSo" asp-route-id="@Model.MaViTri"
+                               class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-send"></i> Ứng tuyển ngay
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="alert alert-secondary mb-2 small">@Model.LyDoKhongTheUngTuyen</div>
+                            @if (Model.DaUngTuyen)
+                            {
+                                <a asp-controller="HoSoUngTuyen" asp-action="HoSoCuaToi" class="btn btn-outline-primary w-100">
+                                    Xem hồ sơ của tôi
+                                </a>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body small">
+                    <h6 class="fw-bold">Thông tin liên hệ</h6>
+                    <div><i class="bi bi-building"></i> @Model.TenPhongBan</div>
+                    @if (!string.IsNullOrEmpty(Model.EmailLienHe))
+                    {
+                        <div><i class="bi bi-envelope"></i> <a href="mailto:@Model.EmailLienHe">@Model.EmailLienHe</a></div>
+                    }
+                    <div class="mt-2 text-muted">
+                        Nhận hồ sơ: @Model.NgayBatDauNhanHoSo.ToString("dd/MM/yyyy") - @Model.HanNopHoSo.ToString("dd/MM/yyyy")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

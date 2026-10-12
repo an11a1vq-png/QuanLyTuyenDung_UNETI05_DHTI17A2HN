@@ -1,0 +1,238 @@
+@*
+    Họ và tên: Lê Gia Bảo
+    Mã sinh viên: 23103100100
+    Module: 2 - Quản lý vị trí tuyển dụng
+    Nội dung: Màn hình quản lý danh sách vị trí tuyển dụng (Admin / Nhân sự): thống kê, tìm kiếm, lọc, sắp xếp, phân trang
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.DanhSachViTriViewModel
+@using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Helpers
+@using QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
+
+@{
+    ViewData["Title"] = "Quản lý vị trí tuyển dụng";
+    var laAdmin = Context.Session.GetVaiTro() == "Admin";
+}
+
+<div class="container-fluid mt-4 mb-5 px-lg-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-primary mb-0"><i class="bi bi-briefcase"></i> Quản lý vị trí tuyển dụng</h3>
+        <a asp-action="ThemMoiViTri" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Thêm vị trí</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        </div>
+    }
+
+    @* ---------- THẺ THỐNG KÊ ---------- *@
+    @if (Model.ThongKe != null)
+    {
+        var tk = Model.ThongKe;
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">@Html.DisplayNameFor(m => tk.TongSoViTri)</div>
+                        <div class="fs-3 fw-bold">@tk.TongSoViTri</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">@Html.DisplayNameFor(m => tk.SoDangTuyen)</div>
+                        <div class="fs-3 fw-bold text-success">@tk.SoDangTuyen</div>
+                        @if (tk.SoSapHetHan > 0)
+                        {
+                            <div class="small text-danger">@tk.SoSapHetHan vị trí sắp hết hạn</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">@Html.DisplayNameFor(m => tk.TongHoSo)</div>
+                        <div class="fs-3 fw-bold text-primary">@tk.TongHoSo</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Đã tuyển / Chỉ tiêu</div>
+                        <div class="fs-3 fw-bold">@tk.TongDaTrungTuyen<span class="fs-6 text-muted"> / @tk.TongChiTieu</span></div>
+                        <div class="progress mt-1" style="height: 6px;" role="progressbar" aria-label="Tỷ lệ hoàn thành chỉ tiêu"
+                             aria-valuenow="@tk.TyLeHoanThanh" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-success" style="width: @tk.TyLeHoanThanh%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* ---------- BỘ LỌC ---------- *@
+    <form asp-action="DanhSachViTri" method="get" class="card card-body shadow-sm mb-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label asp-for="SearchString" class="form-label small mb-1"></label>
+                <input asp-for="SearchString" class="form-control" placeholder="Tên vị trí, mô tả, phòng ban..." />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="MaPhongBan" class="form-label small mb-1"></label>
+                <select asp-for="MaPhongBan" asp-items="Model.DanhSachPhongBan" class="form-select">
+                    <option value="">Tất cả</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="TrangThai" class="form-label small mb-1"></label>
+                <select asp-for="TrangThai" asp-items="Model.DanhSachTrangThai" class="form-select">
+                    <option value="">Tất cả</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="TrinhDo" class="form-label small mb-1"></label>
+                <select asp-for="TrinhDo" asp-items="Model.DanhSachTrinhDo" class="form-select">
+                    <option value="">Tất cả</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="SapXep" class="form-label small mb-1"></label>
+                <select asp-for="SapXep" asp-items="Model.DanhSachSapXep" class="form-select"></select>
+            </div>
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-primary w-100" title="Lọc"><i class="bi bi-search"></i> Lọc</button>
+            </div>
+        </div>
+        @if (Model.DangLoc)
+        {
+            <div class="mt-2 small">
+                Tìm thấy <strong>@Model.TongSoBanGhi</strong> vị trí.
+                <a asp-action="DanhSachViTri">Xóa bộ lọc</a>
+            </div>
+        }
+    </form>
+
+    @* ---------- BẢNG DANH SÁCH ---------- *@
+    @if (!Model.Items.Any())
+    {
+        <div class="alert alert-warning text-center">
+            @(Model.DangLoc ? "Không có vị trí nào khớp bộ lọc." : "Chưa có vị trí tuyển dụng nào.")
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm rounded">
+            <table class="table table-hover align-middle mb-0 bg-white">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Vị trí</th>
+                        <th>Phòng ban</th>
+                        <th class="text-center">Yêu cầu</th>
+                        <th class="text-center">Thời gian nhận hồ sơ</th>
+                        <th class="text-center">Hồ sơ</th>
+                        <th style="min-width: 140px;">Tuyển được</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center" style="width: 160px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="ChiTietViTri" asp-route-id="@item.MaViTri" class="fw-semibold text-decoration-none">@item.TenViTri</a>
+                                <div class="small text-muted">Mã: @item.MaViTri</div>
+                            </td>
+                            <td>@item.TenPhongBan</td>
+                            <td class="text-center small">
+                                @(item.TrinhDoYeuCau ?? "Không yêu cầu")<br />
+                                <span class="text-muted">@(item.SoNamKinhNghiemToiThieu > 0 ? $"{item.SoNamKinhNghiemToiThieu} năm KN" : "Không cần KN")</span>
+                            </td>
+                            <td class="text-center small">
+                                @item.NgayBatDauNhanHoSo.ToString("dd/MM/yyyy") - @item.HanNopHoSo.ToString("dd/MM/yyyy")
+                                @if (item.SapHetHan)
+                                {
+                                    <br /><span class="badge bg-danger">Còn @item.SoNgayConLai ngày</span>
+                                }
+                                else if (!item.ConHan && DateTime.Today > item.HanNopHoSo)
+                                {
+                                    <br /><span class="badge bg-light text-muted border">Đã hết hạn</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill bg-info text-dark">@item.SoHoSoDaNop</span>
+                            </td>
+                            <td>
+                                <div class="small">@item.SoDaTrungTuyen / @item.SoLuongCanTuyen</div>
+                                <div class="progress" style="height: 6px;" role="progressbar" aria-label="Tỷ lệ tuyển được"
+                                     aria-valuenow="@item.TyLeHoanThanh" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar @(item.DaDuChiTieu ? "bg-success" : "")" style="width: @item.TyLeHoanThanh%"></div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="badge border-0 dropdown-toggle @item.BadgeTrangThai" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false" title="Đổi trạng thái">
+                                        @item.TrangThai
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        @foreach (var tt in ViTriTuyenDung.DanhSachTrangThai.Where(t => t != item.TrangThai))
+                                        {
+                                            <li>
+                                                <form asp-action="DoiTrangThai" asp-route-id="@item.MaViTri" method="post">
+                                                    <input type="hidden" name="trangThaiMoi" value="@tt" />
+                                                    <button type="submit" class="dropdown-item">Chuyển sang "@tt"</button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="ChiTietViTri" asp-route-id="@item.MaViTri" class="btn btn-outline-info" title="Chi tiết"><i class="bi bi-eye"></i></a>
+                                    <a asp-action="CapNhatViTri" asp-route-id="@item.MaViTri" class="btn btn-outline-warning" title="Cập nhật"><i class="bi bi-pencil"></i></a>
+                                    @if (laAdmin)
+                                    {
+                                        @* Vị trí đã có hồ sơ thì không cho xóa, chỉ được đóng *@
+                                        <form asp-action="XoaViTri" asp-route-id="@item.MaViTri" method="post" class="d-inline form-xoa"
+                                              data-confirm="Xóa vị trí '@item.TenViTri'? Thao tác này không thể hoàn tác.">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-0 rounded-end"
+                                                    title="@(item.SoHoSoDaNop > 0 ? "Đã có hồ sơ, không thể xóa" : "Xóa")"
+                                                    disabled="@(item.SoHoSoDaNop > 0)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_PhanTrang" model="Model" />
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Xác nhận trước khi xóa
+        document.querySelectorAll('form.form-xoa').forEach(f => f.addEventListener('submit', e => {
+            if (!confirm(f.dataset.confirm)) e.preventDefault();
+        }));
+    </script>
+}
