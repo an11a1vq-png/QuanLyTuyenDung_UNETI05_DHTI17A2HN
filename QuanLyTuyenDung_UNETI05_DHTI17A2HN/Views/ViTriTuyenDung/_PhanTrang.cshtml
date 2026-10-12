@@ -1,0 +1,42 @@
+@*
+    Họ và tên: Lê Gia Bảo
+    Mã sinh viên: 23103100100
+    Module: 2 - Quản lý vị trí tuyển dụng
+    Nội dung: Partial phân trang dùng chung, giữ nguyên các tham số lọc và sắp xếp
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.DanhSachViTriViewModel
+
+@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+
+    // Tạo bộ tham số giữ lại bộ lọc hiện tại cho từng trang
+    Dictionary<string, string?> ThamSo(int trang) => new()
+    {
+        ["page"] = trang.ToString(),
+        ["searchString"] = Model.SearchString,
+        ["maPhongBan"] = Model.MaPhongBan?.ToString(),
+        ["trangThai"] = Model.TrangThai,
+        ["trinhDo"] = Model.TrinhDo,
+        ["sapXep"] = Model.SapXep
+    };
+}
+
+@if (Model.TongSoTrang > 1)
+{
+    <nav aria-label="Phân trang">
+        <ul class="pagination justify-content-center mt-3 mb-0">
+            <li class="page-item @(Model.CoTrangTruoc ? "" : "disabled")">
+                <a class="page-link" asp-action="@action" asp-all-route-data="ThamSo(Model.TrangHienTai - 1)" aria-label="Trang trước">&laquo;</a>
+            </li>
+            @for (var i = 1; i <= Model.TongSoTrang; i++)
+            {
+                <li class="page-item @(i == Model.TrangHienTai ? "active" : "")">
+                    <a class="page-link" asp-action="@action" asp-all-route-data="ThamSo(i)">@i</a>
+                </li>
+            }
+            <li class="page-item @(Model.CoTrangSau ? "" : "disabled")">
+                <a class="page-link" asp-action="@action" asp-all-route-data="ThamSo(Model.TrangHienTai + 1)" aria-label="Trang sau">&raquo;</a>
+            </li>
+        </ul>
+    </nav>
+}

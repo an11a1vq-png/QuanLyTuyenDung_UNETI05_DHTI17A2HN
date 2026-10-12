@@ -1,0 +1,41 @@
+@*
+    Họ và tên: Lê Gia Bảo
+    Mã sinh viên: 23103100100
+    Module: 2 - Quản lý vị trí tuyển dụng
+    Nội dung: Màn hình cập nhật vị trí tuyển dụng
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.ViTriTuyenDungFormViewModel
+
+@{
+    ViewData["Title"] = "Cập nhật vị trí tuyển dụng";
+}
+
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="DanhSachViTri">Vị trí tuyển dụng</a></li>
+            <li class="breadcrumb-item"><a asp-action="ChiTietViTri" asp-route-id="@Model.MaViTri">@Model.TenViTri</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Cập nhật</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning">
+            <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Cập nhật vị trí: @Model.TenViTri</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="CapNhatViTri" asp-route-id="@Model.MaViTri" method="post">
+                <partial name="_FormViTri" model="Model" />
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-save"></i> Lưu thay đổi</button>
+                    <a asp-action="ChiTietViTri" asp-route-id="@Model.MaViTri" class="btn btn-outline-info">Xem chi tiết</a>
+                    <a asp-action="DanhSachViTri" class="btn btn-outline-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

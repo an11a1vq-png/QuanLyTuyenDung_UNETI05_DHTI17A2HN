@@ -1,0 +1,105 @@
+@*
+    Họ và tên: Lê Gia Bảo
+    Mã sinh viên: 23103100100
+    Module: 2 - Quản lý vị trí tuyển dụng
+    Nội dung: Trang việc làm cho ứng viên: xem các vị trí đang tuyển, tìm kiếm, lọc và ứng tuyển
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.DanhSachViTriViewModel
+
+@{
+    ViewData["Title"] = "Việc làm đang tuyển";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary">Cơ hội việc làm</h2>
+        <p class="text-muted mb-0">Hiện có <strong>@Model.TongSoBanGhi</strong> vị trí đang nhận hồ sơ</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    @* ---------- BỘ LỌC ---------- *@
+    <form asp-action="ViecLam" method="get" class="card card-body shadow-sm mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label asp-for="SearchString" class="form-label small mb-1"></label>
+                <input asp-for="SearchString" class="form-control" placeholder="Bạn muốn tìm việc gì?" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="MaPhongBan" class="form-label small mb-1"></label>
+                <select asp-for="MaPhongBan" asp-items="Model.DanhSachPhongBan" class="form-select">
+                    <option value="">Tất cả phòng ban</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="TrinhDo" class="form-label small mb-1"></label>
+                <select asp-for="TrinhDo" asp-items="Model.DanhSachTrinhDo" class="form-select">
+                    <option value="">Tất cả</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="SapXep" class="form-label small mb-1"></label>
+                <select asp-for="SapXep" asp-items="Model.DanhSachSapXep" class="form-select"></select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100" title="Tìm kiếm"><i class="bi bi-search"></i> Tìm</button>
+            </div>
+        </div>
+        @if (Model.DangLoc)
+        {
+            <div class="mt-2 small"><a asp-action="ViecLam">Xóa bộ lọc</a></div>
+        }
+    </form>
+
+    @* ---------- DANH SÁCH DẠNG THẺ ---------- *@
+    @if (!Model.Items.Any())
+    {
+        <div class="alert alert-warning text-center">
+            @(Model.DangLoc ? "Không tìm thấy vị trí phù hợp. Hãy thử từ khóa khác." : "Hiện chưa có vị trí nào đang tuyển. Vui lòng quay lại sau.")
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var item in Model.Items)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-0 @(item.SapHetHan ? "border-start border-4 border-danger" : "")">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">
+                                    <a asp-action="ChiTietViTri" asp-route-id="@item.MaViTri" class="text-decoration-none stretched-link">@item.TenViTri</a>
+                                </h5>
+                                @if (item.SapHetHan)
+                                {
+                                    <span class="badge bg-danger ms-2 text-nowrap">Còn @item.SoNgayConLai ngày</span>
+                                }
+                            </div>
+                            <div class="text-muted small mb-3"><i class="bi bi-building"></i> @item.TenPhongBan</div>
+
+                            <ul class="list-unstyled small mb-3">
+                                <li><i class="bi bi-mortarboard"></i> Trình độ: @(item.TrinhDoYeuCau ?? "Không yêu cầu")</li>
+                                <li><i class="bi bi-clock-history"></i> Kinh nghiệm: @(item.SoNamKinhNghiemToiThieu > 0 ? $"Từ {item.SoNamKinhNghiemToiThieu} năm" : "Không yêu cầu")</li>
+                                <li><i class="bi bi-people"></i> Cần tuyển: @item.SoLuongConLai người</li>
+                            </ul>
+
+                            <div class="mt-auto d-flex justify-content-between align-items-center small">
+                                <span class="text-muted"><i class="bi bi-calendar-event"></i> Hạn nộp: @item.HanNopHoSo.ToString("dd/MM/yyyy")</span>
+                                <span class="text-primary fw-semibold">Xem chi tiết &rarr;</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <partial name="_PhanTrang" model="Model" />
+    }
+</div>

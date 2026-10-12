@@ -1,0 +1,76 @@
+@*
+    Họ và tên: Lê Gia Bảo
+    Mã sinh viên: 23103100100
+    Module: 2 - Quản lý vị trí tuyển dụng
+    Nội dung: Partial form dùng chung cho Thêm mới và Cập nhật vị trí tuyển dụng
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.ViTriTuyenDungFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+<input type="hidden" asp-for="MaViTri" />
+
+<div class="row g-3">
+    <div class="col-md-8">
+        <label asp-for="TenViTri" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+        <input asp-for="TenViTri" class="form-control" placeholder="VD: Lập trình viên .NET" />
+        <span asp-validation-for="TenViTri" class="text-danger small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="MaPhongBan" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+        <select asp-for="MaPhongBan" asp-items="Model.DanhSachPhongBan" class="form-select">
+            <option value="0">-- Chọn phòng ban --</option>
+        </select>
+        <span asp-validation-for="MaPhongBan" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="SoLuongCanTuyen" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+        <input asp-for="SoLuongCanTuyen" class="form-control" min="1" max="1000" />
+        @if (Model.LaCapNhat && Model.SoDaTrungTuyen > 0)
+        {
+            <div class="form-text">Đã trúng tuyển: @Model.SoDaTrungTuyen người (không được giảm thấp hơn)</div>
+        }
+        <span asp-validation-for="SoLuongCanTuyen" class="text-danger small"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="TrinhDoYeuCau" class="form-label fw-semibold"></label>
+        <select asp-for="TrinhDoYeuCau" asp-items="Model.DanhSachTrinhDo" class="form-select">
+            <option value="">-- Không yêu cầu --</option>
+        </select>
+        <span asp-validation-for="TrinhDoYeuCau" class="text-danger small"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="SoNamKinhNghiemToiThieu" class="form-label fw-semibold"></label>
+        <input asp-for="SoNamKinhNghiemToiThieu" class="form-control" min="0" max="50" />
+        <span asp-validation-for="SoNamKinhNghiemToiThieu" class="text-danger small"></span>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="TrangThai" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+        <select asp-for="TrangThai" asp-items="Model.DanhSachTrangThai" class="form-select"></select>
+        <span asp-validation-for="TrangThai" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="NgayBatDauNhanHoSo" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+        <input asp-for="NgayBatDauNhanHoSo" type="date" class="form-control" />
+        <span asp-validation-for="NgayBatDauNhanHoSo" class="text-danger small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="HanNopHoSo" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+        <input asp-for="HanNopHoSo" type="date" class="form-control" />
+        <span asp-validation-for="HanNopHoSo" class="text-danger small"></span>
+    </div>
+
+    <div class="col-12">
+        <label asp-for="MoTaCongViec" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+        <textarea asp-for="MoTaCongViec" class="form-control" rows="5"
+                  placeholder="Mỗi ý một dòng: nhiệm vụ chính, phạm vi công việc..."></textarea>
+        <span asp-validation-for="MoTaCongViec" class="text-danger small"></span>
+    </div>
+    <div class="col-12">
+        <label asp-for="YeuCauUngVien" class="form-label fw-semibold"></label> <span class="text-danger">*</span>
+        <textarea asp-for="YeuCauUngVien" class="form-control" rows="5"
+                  placeholder="Mỗi ý một dòng: kỹ năng, kinh nghiệm, bằng cấp..."></textarea>
+        <span asp-validation-for="YeuCauUngVien" class="text-danger small"></span>
+    </div>
+</div>
