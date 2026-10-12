@@ -1,0 +1,47 @@
+@*
+    Họ và tên: Nguyễn Tấn Dũng
+    Mã sinh viên: 23103100070
+    Module: 3 - Quản lý ứng viên và nộp hồ sơ ứng tuyển
+    Nội dung: Màn hình hiển thị chi tiết thông tin hồ sơ cá nhân của ứng viên
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.UngVien
+
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="bi bi-person-badge"></i> Hồ sơ ứng viên: @Model.HoTen</h4>
+            <a asp-action="CapNhatHoSo" class="btn btn-light btn-sm"><i class="bi bi-pencil-square"></i> Cập nhật hồ sơ</a>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <p><strong>Họ và tên:</strong> @Model.HoTen</p>
+                    <p><strong>Email:</strong> @Model.Email</p>
+                    <p><strong>Số điện thoại:</strong> @Model.SoDienThoai</p>
+                    <p><strong>Ngày sinh:</strong> @(Model.NgaySinh.HasValue ? Model.NgaySinh.Value.ToString("dd/MM/yyyy") : "Chưa cập nhật")</p>
+                    <p><strong>Giới tính:</strong> @(string.IsNullOrEmpty(Model.GioiTinh) ? "Chưa cập nhật" : Model.GioiTinh)</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p><strong>Địa chỉ:</strong> @(string.IsNullOrEmpty(Model.DiaChi) ? "Chưa cập nhật" : Model.DiaChi)</p>
+                    <p><strong>Trình độ học vấn:</strong> @(string.IsNullOrEmpty(Model.TrinhDoHocVan) ? "Chưa cập nhật" : Model.TrinhDoHocVan)</p>
+                    <p><strong>Chuyên ngành:</strong> @(string.IsNullOrEmpty(Model.ChuyenNganh) ? "Chưa cập nhật" : Model.ChuyenNganh)</p>
+                    <p><strong>Kinh nghiệm:</strong> @Model.SoNamKinhNghiem năm</p>
+                    <p><strong>Kỹ năng nổi bật:</strong> @(string.IsNullOrEmpty(Model.KyNang) ? "Chưa cập nhật" : Model.KyNang)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
