@@ -20,11 +20,26 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
     // HẰNG SỐ TRẠNG THÁI DÙNG CHUNG (tránh gõ sai chuỗi ở nhiều nơi)
     public static class TrangThaiTuyenDung
     {
-        // Trạng thái vị trí
+        // Trạng thái vị trí (khớp ViTriTuyenDung.DanhSachTrangThai)
+        public const string ChuaMo = "Chưa mở";
         public const string DangTuyen = "Đang tuyển";
+        public const string TamDung = "Tạm dừng";
+        public const string DaDong = "Đã đóng";
 
-        // Trạng thái hồ sơ
+        // Trạng thái hồ sơ (khớp HoSoUngTuyenController)
+        public const string ChoDuyet = "Chờ duyệt";
+        public const string DatSoTuyen = "Đạt sơ tuyển";
+        public const string KhongDatSoTuyen = "Không đạt sơ tuyển";
+        public const string DaPhongVan = "Đã phỏng vấn";
         public const string TrungTuyen = "Trúng tuyển";
+        public const string KhongTrungTuyen = "Không trúng tuyển";
+        public const string DaHuy = "Đã hủy";
+
+        // Hồ sơ ở các trạng thái này coi như đã kết thúc, ứng viên được nộp lại
+        public static readonly string[] HoSoDaKetThuc = { DaHuy, KhongDatSoTuyen, KhongTrungTuyen };
+
+        // Số ngày còn lại để coi là "sắp hết hạn"
+        public const int SoNgaySapHetHan = 7;
     }
 
     // VIEWMODEL: DÙNG CHO FORM THÊM MỚI / CẬP NHẬT VỊ TRÍ TUYỂN DỤNG
@@ -131,6 +146,35 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             DanhSachTrangThai = new SelectList(ViTriTuyenDung.DanhSachTrangThai, TrangThai);
         }
 
+        // Nạp dropdown phòng ban từ danh sách controller đã truy vấn.
+        // Chỉ hiện phòng ban đang hoạt động, nhưng vẫn giữ phòng ban hiện tại khi cập nhật
+        public void NapPhongBan(IEnumerable<PhongBan> dsPhongBan)
+        {
+            DanhSachPhongBan = dsPhongBan
+                .Where(p => p.TrangThai || p.MaPhongBan == MaPhongBan)
+                .OrderBy(p => p.TenPhongBan)
+                .Select(p => new SelectListItem
+                {
+                    Value = p.MaPhongBan.ToString(),
+                    Text = p.TrangThai ? p.TenPhongBan : $"{p.TenPhongBan} (ngưng hoạt động)",
+                    Selected = p.MaPhongBan == MaPhongBan
+                })
+                .ToList();
+        }
+
+        // Kiểm tra phòng ban được chọn (controller truyền vào sau khi FindAsync)
+        public void KiemTraPhongBan(PhongBan? phongBan, ModelStateDictionary modelState)
+        {
+            if (phongBan == null)
+            {
+                modelState.AddModelError(nameof(MaPhongBan), "Phòng ban không tồn tại");
+            }
+            else if (!phongBan.TrangThai && TrangThai == TrangThaiTuyenDung.DangTuyen)
+            {
+                modelState.AddModelError(nameof(MaPhongBan), "Phòng ban đang ngưng hoạt động, không thể mở tuyển");
+            }
+        }
+
         // Entity -> ViewModel (màn hình cập nhật)
         public static ViTriTuyenDungFormViewModel TuEntity(ViTriTuyenDung v, int soDaTrungTuyen = 0) => new()
         {
@@ -212,12 +256,19 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
 
         public int SoLuongConLai => Math.Max(0, SoLuongCanTuyen - SoDaTrungTuyen);
 
+        public bool SapHetHan => CoTheUngTuyen && SoNgayConLai <= TrangThaiTuyenDung.SoNgaySapHetHan;
+
+        // Phần trăm chỉ tiêu đã tuyển được (0 - 100), dùng cho progress bar
+        public int TyLeHoanThanh => SoLuongCanTuyen <= 0
+            ? 0
+            : Math.Min(100, SoDaTrungTuyen * 100 / SoLuongCanTuyen);
+
         // Class CSS badge Bootstrap theo trạng thái, để view không phải viết switch
         public string BadgeTrangThai => TrangThai switch
         {
-            "Đang tuyển" => "bg-success",
-            "Tạm dừng" => "bg-warning text-dark",
-            "Đã đóng" => "bg-secondary",
+            TrangThaiTuyenDung.DangTuyen => "bg-success",
+            TrangThaiTuyenDung.TamDung => "bg-warning text-dark",
+            TrangThaiTuyenDung.DaDong => "bg-secondary",
             _ => "bg-light text-dark"
         };
     }
@@ -263,7 +314,10 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         [Display(Name = "Trình độ")]
         public string? TrinhDo { get; set; }
 
-        public bool DangLoc => !string.IsNullOrWhiteSpace(SearchString) || MaPhongBan.HasValue
+        // Thẻ thống kê đầu trang quản lý (null ở trang việc làm của ứng viên)
+        public ThongKeViTriViewModel? ThongKe { get; set; }
+
+        public bool DangLoc =>!string.IsNullOrWhiteSpace(SearchString) || MaPhongBan.HasValue
                                || !string.IsNullOrEmpty(TrangThai) || !string.IsNullOrEmpty(TrinhDo);
 
         // Dữ liệu cho các dropdown lọc
@@ -294,11 +348,114 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             TrangHienTai = Math.Clamp(trangYeuCau, 1, Math.Max(1, TongSoTrang));
         }
 
-        // Nạp sẵn dropdown trình độ / trạng thái (phòng ban do controller truy vấn CSDL)
+        // Nạp sẵn dropdown trình độ / trạng thái / sắp xếp (phòng ban do controller truy vấn CSDL)
         public void NapDanhMucCoDinh()
         {
             DanhSachTrangThai = new SelectList(ViTriTuyenDung.DanhSachTrangThai, TrangThai);
             DanhSachTrinhDo = new SelectList(ViTriTuyenDung.DanhSachTrinhDo, TrinhDo);
+            DanhSachSapXep = new SelectList(CacKieuSapXep, "Key", "Value", SapXep);
+        }
+
+        // Sắp xếp
+        [Display(Name = "Sắp xếp")]
+        public string? SapXep { get; set; }
+
+        public static readonly IReadOnlyDictionary<string, string> CacKieuSapXep = new Dictionary<string, string>
+        {
+            ["han_nop"] = "Hạn nộp gần nhất",
+            ["moi_nhat"] = "Mới đăng",
+            ["ten"] = "Tên vị trí (A-Z)",
+            ["so_luong"] = "Số lượng cần tuyển"
+        };
+
+        public IEnumerable<SelectListItem> DanhSachSapXep { get; set; } = Enumerable.Empty<SelectListItem>();
+
+        // Áp bộ lọc + sắp xếp lên truy vấn EF (chạy dưới SQL).
+        // chiLayDangTuyen = true cho trang việc làm của ứng viên: bỏ qua lọc trạng thái,
+        // chỉ lấy vị trí đang tuyển, đã mở và còn hạn
+        public IQueryable<ViTriTuyenDung> ApDungBoLoc(IQueryable<ViTriTuyenDung> query, bool chiLayDangTuyen = false)
+        {
+            if (!string.IsNullOrWhiteSpace(SearchString))
+            {
+                var term = SearchString.Trim();
+                query = query.Where(v => v.TenViTri.Contains(term) ||
+                                         v.MoTaCongViec.Contains(term) ||
+                                         (v.PhongBan != null && v.PhongBan.TenPhongBan.Contains(term)));
+            }
+
+            if (MaPhongBan.HasValue)
+            {
+                query = query.Where(v => v.MaPhongBan == MaPhongBan.Value);
+            }
+
+            if (!string.IsNullOrEmpty(TrinhDo))
+            {
+                query = query.Where(v => v.TrinhDoYeuCau == TrinhDo);
+            }
+
+            if (chiLayDangTuyen)
+            {
+                var homNay = DateTime.Today;
+                query = query.Where(v => v.TrangThai == TrangThaiTuyenDung.DangTuyen &&
+                                         v.NgayBatDauNhanHoSo <= homNay &&
+                                         v.HanNopHoSo >= homNay);
+            }
+            else if (!string.IsNullOrEmpty(TrangThai))
+            {
+                query = query.Where(v => v.TrangThai == TrangThai);
+            }
+
+            return SapXep switch
+            {
+                "moi_nhat" => query.OrderByDescending(v => v.NgayBatDauNhanHoSo).ThenByDescending(v => v.MaViTri),
+                "ten" => query.OrderBy(v => v.TenViTri),
+                "so_luong" => query.OrderByDescending(v => v.SoLuongCanTuyen).ThenBy(v => v.HanNopHoSo),
+                // Mặc định: vị trí đang tuyển lên trước, hạn nộp gần nhất trước
+                _ => query.OrderByDescending(v => v.TrangThai == TrangThaiTuyenDung.DangTuyen).ThenBy(v => v.HanNopHoSo)
+            };
+        }
+    }
+
+    // VIEWMODEL: THẺ THỐNG KÊ TỔNG QUAN ĐẦU TRANG QUẢN LÝ VỊ TRÍ
+    public class ThongKeViTriViewModel
+    {
+        [Display(Name = "Tổng số vị trí")]
+        public int TongSoViTri { get; set; }
+
+        [Display(Name = "Đang tuyển")]
+        public int SoDangTuyen { get; set; }
+
+        [Display(Name = "Sắp hết hạn")]
+        public int SoSapHetHan { get; set; }
+
+        [Display(Name = "Đã đóng")]
+        public int SoDaDong { get; set; }
+
+        [Display(Name = "Tổng chỉ tiêu")]
+        public int TongChiTieu { get; set; }
+
+        [Display(Name = "Đã trúng tuyển")]
+        public int TongDaTrungTuyen { get; set; }
+
+        [Display(Name = "Tổng hồ sơ")]
+        public int TongHoSo { get; set; }
+
+        public int TyLeHoanThanh => TongChiTieu <= 0 ? 0 : Math.Min(100, TongDaTrungTuyen * 100 / TongChiTieu);
+
+        // Tính từ danh sách đã chiếu (dùng khi đã có sẵn Items, tránh query thêm)
+        public static ThongKeViTriViewModel TuDanhSach(IEnumerable<ViTriTomTatViewModel> ds)
+        {
+            var list = ds as IList<ViTriTomTatViewModel> ?? ds.ToList();
+            return new ThongKeViTriViewModel
+            {
+                TongSoViTri = list.Count,
+                SoDangTuyen = list.Count(v => v.TrangThai == TrangThaiTuyenDung.DangTuyen),
+                SoSapHetHan = list.Count(v => v.SapHetHan),
+                SoDaDong = list.Count(v => v.TrangThai == TrangThaiTuyenDung.DaDong),
+                TongChiTieu = list.Sum(v => v.SoLuongCanTuyen),
+                TongDaTrungTuyen = list.Sum(v => v.SoDaTrungTuyen),
+                TongHoSo = list.Sum(v => v.SoHoSoDaNop)
+            };
         }
     }
 
@@ -326,6 +483,29 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
 
         // Hiển thị nút "Ứng tuyển" khi vị trí còn nhận hồ sơ và ứng viên chưa nộp
         public bool HienNutUngTuyen => CoTheUngTuyen && !DaUngTuyen;
+
+        // Lý do không ứng tuyển được, để hiển thị thay cho nút (null = ứng tuyển được)
+        public string? LyDoKhongTheUngTuyen
+        {
+            get
+            {
+                if (DaUngTuyen) return "Bạn đã nộp hồ sơ cho vị trí này.";
+                if (TrangThai != TrangThaiTuyenDung.DangTuyen) return $"Vị trí đang ở trạng thái '{TrangThai}'.";
+                if (DateTime.Today < NgayBatDauNhanHoSo.Date) return $"Bắt đầu nhận hồ sơ từ {NgayBatDauNhanHoSo:dd/MM/yyyy}.";
+                if (DateTime.Today > HanNopHoSo.Date) return "Đã hết hạn nộp hồ sơ.";
+                if (DaDuChiTieu) return "Vị trí đã tuyển đủ chỉ tiêu.";
+                return null;
+            }
+        }
+
+        // Lấy số hồ sơ của một trạng thái, trả 0 nếu chưa có
+        public int SoHoSo(string trangThaiHoSo) =>
+            ThongKeTheoTrangThai.TryGetValue(trangThaiHoSo, out var soLuong) ? soLuong : 0;
+
+        // Hồ sơ đang chờ xử lý (chưa có kết quả cuối)
+        public int SoHoSoDangXuLy => SoHoSo(TrangThaiTuyenDung.ChoDuyet)
+                                   + SoHoSo(TrangThaiTuyenDung.DatSoTuyen)
+                                   + SoHoSo(TrangThaiTuyenDung.DaPhongVan);
 
         // Biểu thức chiếu cho EF (giống ViTriTuyenDungItemViewModel.Projection)
         public static readonly Expression<Func<ViTriTuyenDung, ChiTietViTriViewModel>> Projection = v => new ChiTietViTriViewModel
