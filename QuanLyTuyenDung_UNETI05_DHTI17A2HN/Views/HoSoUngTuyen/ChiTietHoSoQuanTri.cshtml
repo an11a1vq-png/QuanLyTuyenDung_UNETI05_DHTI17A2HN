@@ -1,0 +1,331 @@
+﻿
+@* =========================================================
+   HỌ VÀ TÊN: Nguyễn Văn Khánh
+   MÃ SINH VIÊN: 23103100101
+   MODULE 4: QUẢN LÝ HỒ SƠ ỨNG TUYỂN
+   CHỨC NĂNG: XEM CHI TIẾT HỒ SƠ DÀNH CHO QUẢN TRỊ
+   ========================================================= *@
+
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.HoSoUngTuyen
+
+@{
+    ViewData["Title"] = "Chi tiết hồ sơ ứng tuyển";
+
+    // Lấy thông tin ứng viên và vị trí từ hồ sơ.
+    var ungVien = Model.UngVien;
+    var viTri = Model.ViTriTuyenDung;
+
+    // Xác định màu hiển thị tương ứng với trạng thái hồ sơ.
+    string mauTrangThai = Model.TrangThai switch
+    {
+        "Chờ duyệt" => "bg-warning text-dark",
+        "Đạt sơ tuyển" => "bg-info text-dark",
+        "Không đạt sơ tuyển" => "bg-danger",
+        "Chờ phỏng vấn" => "bg-primary",
+        "Đã phỏng vấn" => "bg-secondary",
+        "Trúng tuyển" => "bg-success",
+        "Không trúng tuyển" => "bg-danger",
+        "Đã hủy" => "bg-dark",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="container py-4">
+
+    @* KHỐI 1: TIÊU ĐỀ VÀ ĐIỀU HƯỚNG *@
+    <div class="d-flex flex-wrap justify-content-between
+                align-items-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Chi tiết hồ sơ ứng tuyển</h2>
+            <p class="text-muted mb-0">
+                Xem thông tin ứng viên và tiến trình xử lý hồ sơ.
+            </p>
+        </div>
+
+        <a asp-controller="HoSoUngTuyen"
+           asp-action="QuanLyDanhSach"
+           class="btn btn-outline-secondary">
+            Quay lại danh sách
+        </a>
+    </div>
+
+    @* KHỐI 2: HIỂN THỊ THÔNG BÁO TỪ CONTROLLER *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @* KHỐI 3: TỔNG QUAN HỒ SƠ
+       Hiển thị mã hồ sơ, ngày nộp, trạng thái hiện tại
+       và thời điểm xử lý gần nhất. *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0">1. Tổng quan hồ sơ</h5>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+
+                <div class="col-md-4">
+                    <div class="text-muted small">Mã hồ sơ</div>
+                    <div class="fw-semibold">@Model.MaHoSo</div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-muted small">Ngày nộp</div>
+                    <div class="fw-semibold">
+                        @Model.NgayNop.ToString("dd/MM/yyyy")
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-muted small">Trạng thái hiện tại</div>
+                    <span class="badge @mauTrangThai">
+                        @Model.TrangThai
+                    </span>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="text-muted small">Ngày xử lý</div>
+                    <div>
+                        @(Model.NgayXuLy.HasValue
+                            ? Model.NgayXuLy.Value.ToString("dd/MM/yyyy HH:mm")
+                            : "Chưa xử lý")
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="text-muted small">Nhận xét sơ tuyển</div>
+                    <div style="white-space: pre-line;">
+                        @(Model.NhanXetSoTuyen ?? "Chưa có nhận xét")
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @* KHỐI 4: THÔNG TIN CÁ NHÂN ỨNG VIÊN
+       Lấy dữ liệu từ navigation property UngVien. *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">2. Thông tin ứng viên</h5>
+        </div>
+
+        <div class="card-body">
+            @if (ungVien != null)
+            {
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Mã ứng viên</div>
+                        <div class="fw-semibold">
+                            @ungVien.MaUngVien
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Họ và tên</div>
+                        <div class="fw-semibold">
+                            @ungVien.HoTen
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Email</div>
+                        <div>@ungVien.Email</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Số điện thoại</div>
+                        <div>@ungVien.SoDienThoai</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Ngày sinh</div>
+                        <div>
+                            @(ungVien.NgaySinh.HasValue
+                                ? ungVien.NgaySinh.Value.ToString("dd/MM/yyyy")
+                                : "Chưa cập nhật")
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Giới tính</div>
+                        <div>
+                            @(ungVien.GioiTinh ?? "Chưa cập nhật")
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Địa chỉ</div>
+                        <div>
+                            @(ungVien.DiaChi ?? "Chưa cập nhật")
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Trạng thái hoạt động</div>
+                        @if (ungVien.TrangThai)
+                        {
+                            <span class="badge bg-success">Đang hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Ngừng hoạt động</span>
+                        }
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Trình độ học vấn</div>
+                        <div>
+                            @(ungVien.TrinhDoHocVan ?? "Chưa cập nhật")
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Chuyên ngành</div>
+                        <div>
+                            @(ungVien.ChuyenNganh ?? "Chưa cập nhật")
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Kinh nghiệm</div>
+                        <div>@ungVien.SoNamKinhNghiem năm</div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="text-muted small">Kỹ năng / Ghi chú</div>
+                        <div class="border rounded p-3 bg-light"
+                             style="white-space: pre-line;">
+                            @(ungVien.KyNang ?? "Chưa cập nhật")
+                        </div>
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning mb-0">
+                    Hồ sơ chưa có thông tin ứng viên liên kết.
+                </div>
+            }
+        </div>
+    </div>
+
+    @* KHỐI 5: THÔNG TIN VỊ TRÍ TUYỂN DỤNG
+       Hiển thị vị trí, phòng ban, chỉ tiêu và yêu cầu tuyển dụng. *@
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">3. Thông tin vị trí tuyển dụng</h5>
+        </div>
+
+        <div class="card-body">
+            @if (viTri != null)
+            {
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Mã vị trí</div>
+                        <div class="fw-semibold">
+                            @viTri.MaViTri
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Tên vị trí</div>
+                        <div class="fw-semibold">
+                            @viTri.TenViTri
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Phòng ban</div>
+                        <div>
+                            @(viTri.PhongBan?.TenPhongBan
+                                ?? "Chưa có thông tin")
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Số lượng cần tuyển</div>
+                        <div>@viTri.SoLuongCanTuyen người</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">Trình độ yêu cầu</div>
+                        <div>
+                            @(viTri.TrinhDoYeuCau ?? "Không quy định")
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Kinh nghiệm tối thiểu
+                        </div>
+                        <div>
+                            @viTri.SoNamKinhNghiemToiThieu năm
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="text-muted small">Mô tả công việc</div>
+                        <div class="border rounded p-3 bg-light"
+                             style="white-space: pre-line;">
+                            @viTri.MoTaCongViec
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="text-muted small">Yêu cầu ứng viên</div>
+                        <div class="border rounded p-3 bg-light"
+                             style="white-space: pre-line;">
+                            @viTri.YeuCauUngVien
+                        </div>
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning mb-0">
+                    Hồ sơ chưa có thông tin vị trí tuyển dụng liên kết.
+                </div>
+            }
+        </div>
+    </div>
+
+    @* KHỐI 6: THAO TÁC THEO TRẠNG THÁI
+       Chỉ hiển thị nút sơ tuyển khi hồ sơ còn chờ duyệt.
+       Việc chuyển trạng thái phải được kiểm tra ở Controller. *@
+    <div class="d-flex flex-wrap gap-2">
+
+        @if (Model.TrangThai == "Chờ duyệt")
+        {
+            <a asp-controller="HoSoUngTuyen"
+               asp-action="SoTuyen"
+               asp-route-id="@Model.MaHoSo"
+               class="btn btn-primary">
+                Tiến hành sơ tuyển
+            </a>
+        }
+
+        <a asp-controller="HoSoUngTuyen"
+           asp-action="QuanLyDanhSach"
+           class="btn btn-outline-secondary">
+            Quay lại danh sách
+        </a>
+
+    </div>
+
+</div>
