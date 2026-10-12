@@ -346,83 +346,111 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         }
 
 
-        // POST: Cập nhật trạng thái tuyển dụng
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CapNhatTrangThai(
-            int id,
-            string trangThaiMoi)
-        {
-            var hoSo = await _context.HoSoUngTuyen
-                .Include(h => h.ViTriTuyenDung)
-                .FirstOrDefaultAsync(h => h.MaHoSo == id);
-
-            if (hoSo == null)
+     
+    // POST: Quản lý luồng chuyển trạng thái hồ sơ
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CapNhatTrangThai(
+        int id,
+        string trangThaiMoi)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy hồ sơ.";
-                return RedirectToAction(nameof(QuanLyDanhSach));
-            }
+                var hoSo = await _context.HoSoUngTuyen
+                    .Include(h => h.ViTriTuyenDung)
+                    .FirstOrDefaultAsync(h => h.MaHoSo == id);
 
-            // Các trạng thái được phép sử dụng
-            var trangThaiHopLe = new[]
-            {
-                "Chờ duyệt",
-                "Đạt sơ tuyển",
-                "Không đạt sơ tuyển",
-                "Chờ phỏng vấn",
-                "Đã phỏng vấn",
-                "Trúng tuyển",
-                "Không trúng tuyển",
-                "Đã hủy"
-            };
+                if (hoSo == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy hồ sơ.";
+                    return RedirectToAction(nameof(QuanLyDanhSach));
+                }
 
-            if (!trangThaiHopLe.Contains(trangThaiMoi))
-            {
-                TempData["ErrorMessage"] =
-                    "Trạng thái tuyển dụng không hợp lệ.";
+                if (string.IsNullOrWhiteSpace(trangThaiMoi))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng chọn trạng thái.";
+                    return RedirectToAction(nameof(QuanLyDanhSach));
+                }
 
-                return RedirectToAction(nameof(QuanLyDanhSach));
-            }
-
-            // Không cho thay đổi hồ sơ đã hủy
-            if (hoSo.TrangThai == "Đã hủy")
-            {
-                TempData["ErrorMessage"] =
-                    "Hồ sơ đã bị hủy, không thể cập nhật trạng thái.";
-
-                return RedirectToAction(nameof(QuanLyDanhSach));
-            }
-
-            // Nếu chuyển sang Trúng tuyển,
-            // kiểm tra số lượng tuyển của vị trí
-            if (trangThaiMoi == "Trúng tuyển" &&
-                hoSo.TrangThai != "Trúng tuyển")
-            {
-                int soNguoiTrungTuyen = await _context.HoSoUngTuyen
-                    .CountAsync(h =>
-                        h.MaViTri == hoSo.MaViTri &&
-                        h.TrangThai == "Trúng tuyển");
-
-                int chiTieu = hoSo.ViTriTuyenDung.SoLuongCanTuyen;
-
-                if (soNguoiTrungTuyen >= chiTieu)
+                // Không xử lý lại hồ sơ đã hủy hoặc đã có kết quả cuối cùng
+                if (hoSo.TrangThai == "Đã hủy" ||
+                    hoSo.TrangThai == "Không đạt sơ tuyển" ||
+                    hoSo.TrangThai == "Trúng tuyển" ||
+                    hoSo.TrangThai == "Không trúng tuyển")
                 {
                     TempData["ErrorMessage"] =
-                        $"Vị trí đã đủ chỉ tiêu tuyển dụng ({chiTieu} người).";
+                        "Hồ sơ đã kết thúc quy trình, không thể chuyển trạng thái.";
 
                     return RedirectToAction(nameof(QuanLyDanhSach));
                 }
+
+                // Kiểm tra luồng chuyển trạng thái hợp lệ
+                bool hopLe = hoSo.TrangThai switch
+                {
+                    "Chờ duyệt" =>
+                        trangThaiMoi == "Đạt sơ tuyển" ||
+                        trangThaiMoi == "Không đạt sơ tuyển" ||
+                        trangThaiMoi == "Đã hủy",
+
+                    "Đạt sơ tuyển" =>
+                        trangThaiMoi == "Chờ phỏng vấn" ||
+                        trangThaiMoi == "Đã hủy",
+
+                    "Chờ phỏng vấn" =>
+                        trangThaiMoi == "Đã phỏng vấn" ||
+                        trangThaiMoi == "Đã hủy",
+
+                    "Đã phỏng vấn" =>
+                        trangThaiMoi == "Trúng tuyển" ||
+                        trangThaiMoi == "Không trúng tuyển" ||
+                        trangThaiMoi == "Đã hủy",
+
+                    _ => false
+                };
+
+                if (!hopLe)
+                {
+                    TempData["ErrorMessage"] =
+                        $"Không thể chuyển từ '{hoSo.TrangThai}' " +
+                        $"sang '{trangThaiMoi}'.";
+
+                    return RedirectToAction(nameof(QuanLyDanhSach));
+                }
+
+                // Kiểm tra chỉ tiêu trước khi chuyển sang Trúng tuyển
+                if (trangThaiMoi == "Trúng tuyển")
+                {
+                    if (hoSo.ViTriTuyenDung == null)
+                    {
+                        TempData["ErrorMessage"] =
+                            "Không tìm thấy vị trí tuyển dụng.";
+
+                        return RedirectToAction(nameof(QuanLyDanhSach));
+                    }
+
+                    int soNguoiTrungTuyen = await _context.HoSoUngTuyen
+                        .CountAsync(h =>
+                            h.MaViTri == hoSo.MaViTri &&
+                            h.TrangThai == "Trúng tuyển");
+
+                    int chiTieu = hoSo.ViTriTuyenDung.SoLuongCanTuyen;
+
+                    if (soNguoiTrungTuyen >= chiTieu)
+                    {
+                        TempData["ErrorMessage"] =
+                            $"Vị trí đã đủ chỉ tiêu ({chiTieu} người).";
+
+                        return RedirectToAction(nameof(QuanLyDanhSach));
+                    }
+                }
+
+                hoSo.TrangThai = trangThaiMoi;
+                hoSo.NgayXuLy = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] =
+                    "Cập nhật trạng thái hồ sơ thành công.";
+
+                return RedirectToAction(nameof(QuanLyDanhSach));
             }
-
-            hoSo.TrangThai = trangThaiMoi;
-            hoSo.NgayXuLy = DateTime.Now;
-
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] =
-                "Cập nhật trạng thái hồ sơ thành công.";
-
-            return RedirectToAction(nameof(QuanLyDanhSach));
-        }
     }
 }
