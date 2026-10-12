@@ -1,0 +1,314 @@
+﻿@* =========================================================
+   HỌ VÀ TÊN: Nguyễn Văn Khánh
+   MÃ SINH VIÊN: 23103100101
+   MODULE 4: TIẾP NHẬN VÀ QUẢN LÝ HỒ SƠ ỨNG TUYỂN
+   CHỨC NĂNG: HIỂN THỊ DANH SÁCH, TÌM KIẾM VÀ LỌC HỒ SƠ
+   ========================================================= *@
+@* Model nhận danh sách hồ sơ ứng tuyển từ Controller.
+   Mỗi hồ sơ có thể liên kết với thông tin ứng viên,
+   vị trí tuyển dụng và phòng ban. *@
+
+@model IEnumerable<QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.HoSoUngTuyen>
+
+@{
+    ViewData["Title"] = "Quản lý danh sách hồ sơ ứng tuyển";
+
+    var phongBans = ViewBag.PhongBans
+        as IEnumerable<QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.PhongBan>;
+
+    var trangThaiList = ViewBag.TrangThai as IEnumerable<string>;
+
+    string search = ViewBag.Search as string ?? "";
+    string selectedPhongBan = ViewBag.SelectedPhongBan as string ?? "";
+    string selectedTrangThai = ViewBag.SelectedTrangThai as string ?? "";
+
+    int tongHoSo = Model?.Count() ?? 0;
+    int choDuyet = Model?.Count(h => h.TrangThai == "Chờ duyệt") ?? 0;
+}
+
+<div class="container-fluid py-4">
+
+    <!-- TIÊU ĐỀ -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Quản lý hồ sơ ứng tuyển</h2>
+            <p class="text-muted mb-0">
+                Tiếp nhận, tìm kiếm và theo dõi hồ sơ ứng tuyển.
+            </p>
+        </div>
+    </div>
+
+    <!-- THÔNG BÁO -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Đóng"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Đóng"></button>
+        </div>
+    }
+
+    <!-- THỐNG KÊ -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted mb-2">
+                        Tổng hồ sơ theo bộ lọc
+                    </div>
+                    <h3 class="fw-bold text-primary mb-0">
+                        @tongHoSo
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted mb-2">
+                        Hồ sơ đang chờ duyệt
+                    </div>
+                    <h3 class="fw-bold text-warning mb-0">
+                        @choDuyet
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BỘ LỌC -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold">Tìm kiếm và lọc hồ sơ</h5>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="HoSoUngTuyen"
+                  asp-action="QuanLyDanhSach"
+                  method="get">
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">
+                            Từ khóa
+                        </label>
+                        <input type="text"
+                               id="search"
+                               name="search"
+                               class="form-control"
+                               value="@search"
+                               placeholder="Tên ứng viên hoặc vị trí..." />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="phongBan" class="form-label">
+                            Phòng ban
+                        </label>
+                        <select id="phongBan"
+                                name="phongBan"
+                                class="form-select">
+                            <option value="">Tất cả phòng ban</option>
+
+                            @if (phongBans != null)
+                            {
+                                foreach (var pb in phongBans)
+                                {
+                                    if (selectedPhongBan == pb.TenPhongBan)
+                                    {
+                                        <option value="@pb.TenPhongBan"
+                                                selected>
+                                            @pb.TenPhongBan
+                                        </option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@pb.TenPhongBan">
+                                            @pb.TenPhongBan
+                                        </option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="trangThai" class="form-label">
+                            Trạng thái hồ sơ
+                        </label>
+                        <select id="trangThai"
+                                name="trangThai"
+                                class="form-select">
+                            <option value="">Tất cả trạng thái</option>
+
+                            @if (trangThaiList != null)
+                            {
+                                foreach (var tt in trangThaiList)
+                                {
+                                    if (selectedTrangThai == tt)
+                                    {
+                                        <option value="@tt" selected>
+                                            @tt
+                                        </option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@tt">
+                                            @tt
+                                        </option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+                            Tìm kiếm
+                        </button>
+                    </div>
+
+                    <div class="col-12">
+                        <a asp-controller="HoSoUngTuyen"
+                           asp-action="QuanLyDanhSach"
+                           class="btn btn-outline-secondary btn-sm">
+                            Xóa bộ lọc
+                        </a>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DANH SÁCH HỒ SƠ -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold">
+                Danh sách hồ sơ (@tongHoSo)
+            </h5>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center">Mã hồ sơ</th>
+                            <th>Ứng viên</th>
+                            <th>Vị trí ứng tuyển</th>
+                            <th>Phòng ban</th>
+                            <th>Ngày nộp</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var hoSo in Model)
+                            {
+                                string mauTrangThai = hoSo.TrangThai switch
+                                {
+                                    "Chờ duyệt" => "bg-warning text-dark",
+                                    "Đạt sơ tuyển" => "bg-info text-dark",
+                                    "Không đạt sơ tuyển" => "bg-danger",
+                                    "Chờ phỏng vấn" => "bg-primary",
+                                    "Đã phỏng vấn" => "bg-secondary",
+                                    "Trúng tuyển" => "bg-success",
+                                    "Không trúng tuyển" => "bg-danger",
+                                    "Đã hủy" => "bg-dark",
+                                    _ => "bg-secondary"
+                                };
+
+                                <tr>
+                                    <td class="text-center">
+                                        @hoSo.MaHoSo
+                                    </td>
+
+                                    <td>
+                                        <div class="fw-semibold">
+                                            @(hoSo.UngVien?.HoTen ?? "Chưa có thông tin")
+                                        </div>
+                                        <div class="small text-muted">
+                                            @(hoSo.UngVien?.Email ?? "")
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        @(hoSo.ViTriTuyenDung?.TenViTri
+                                            ?? "Chưa có thông tin")
+                                    </td>
+
+                                    <td>
+                                        @(hoSo.ViTriTuyenDung?.PhongBan?.TenPhongBan
+                                            ?? "Chưa có thông tin")
+                                    </td>
+
+                                    <td>
+                                        @hoSo.NgayNop.ToString("dd/MM/yyyy")
+                                    </td>
+
+                                    <td>
+                                        <span class="badge @mauTrangThai">
+                                            @hoSo.TrangThai
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+
+                                            <a asp-controller="HoSoUngTuyen"
+                                               asp-action="ChiTietHoSoQuanTri"
+                                               asp-route-id="@hoSo.MaHoSo"
+                                               class="btn btn-outline-secondary btn-sm">
+                                                Chi tiết
+                                            </a>
+
+                                            @if (hoSo.TrangThai == "Chờ duyệt")
+                                            {
+                                                <a asp-controller="HoSoUngTuyen"
+                                                   asp-action="SoTuyen"
+                                                   asp-route-id="@hoSo.MaHoSo"
+                                                   class="btn btn-primary btn-sm">
+                                                    Sơ tuyển
+                                                </a>
+                                            }
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7"
+                                    class="text-center py-5 text-muted">
+                                    Không tìm thấy hồ sơ ứng tuyển phù hợp.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
