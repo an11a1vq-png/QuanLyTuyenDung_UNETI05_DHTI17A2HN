@@ -74,7 +74,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             // Kiểm tra xem hồ sơ đã có lịch phỏng vấn đang hiệu lực nào chưa (trên các lịch chưa hủy)
-            var existingScheduleForCandidate = await _context.LichPhongVans
+            var existingScheduleForCandidate = await _context.LichPhongVan
                 .AnyAsync(l => l.MaHoSo == lichPhongVan.MaHoSo && l.TrangThai != "Đã hủy");
 
             if (existingScheduleForCandidate)
