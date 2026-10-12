@@ -1,0 +1,97 @@
+@*
+    Họ và tên: Nguyễn Tấn Dũng
+    Mã sinh viên: 23103100070
+    Module: 3 - Quản lý ứng viên và nộp hồ sơ ứng tuyển
+    Nội dung: Màn hình danh sách theo dõi các hồ sơ đã nộp và thao tác hủy hồ sơ
+*@
+@model IEnumerable<QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.HoSoUngTuyen>
+
+@{
+    ViewData["Title"] = "Hồ sơ đã nộp của tôi";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-primary mb-0"><i class="bi bi-briefcase-fill"></i> Danh sách hồ sơ ứng tuyển của tôi</h3>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-sm">Tìm kiếm vị trí khác</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning text-center">
+            Bạn chưa nộp hồ sơ ứng tuyển nào. <a asp-controller="Home" asp-action="Index" class="alert-link">Xem danh sách việc làm tại đây!</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm rounded">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-primary text-center">
+                    <tr>
+                        <th style="width: 80px;">Mã HS</th>
+                        <th>Vị trí ứng tuyển</th>
+                        <th>Phòng ban</th>
+                        <th style="width: 150px;">Ngày nộp</th>
+                        <th style="width: 150px;">Trạng thái</th>
+                        <th style="width: 130px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-center fw-bold">#@item.MaHoSo</td>
+                            <td class="fw-bold">@item.ViTriTuyenDung?.TenViTri</td>
+                            <td>@item.ViTriTuyenDung?.PhongBan?.TenPhongBan</td>
+                            <td class="text-center">@item.NgayNop.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-center">
+                                @if (item.TrangThai == "Chờ duyệt")
+                                {
+                                    <span class="badge bg-warning text-dark px-2 py-1">Chờ duyệt</span>
+                                }
+                                else if (item.TrangThai == "Đạt sơ tuyển")
+                                {
+                                    <span class="badge bg-info text-white px-2 py-1">Đạt sơ tuyển</span>
+                                }
+                                else if (item.TrangThai == "Trúng tuyển")
+                                {
+                                    <span class="badge bg-success px-2 py-1">Trúng tuyển</span>
+                                }
+                                else if (item.TrangThai == "Đã hủy")
+                                {
+                                    <span class="badge bg-secondary px-2 py-1">Đã hủy</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger px-2 py-1">@item.TrangThai</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (item.TrangThai == "Chờ duyệt")
+                                {
+                                    <form asp-action="HuyHoSo" asp-route-id="@item.MaHoSo" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy hồ sơ này không?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Hủy hồ sơ</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Không thể hủy</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
