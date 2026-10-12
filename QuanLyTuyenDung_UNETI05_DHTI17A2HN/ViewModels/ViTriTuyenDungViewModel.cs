@@ -1,6 +1,6 @@
 // ==============================================================================
-// Họ và tên: [Họ và tên]
-// Mã sinh viên: [Mã sinh viên]
+// Họ và tên: Lê Gia Bảo
+// Mã sinh viên: 23103100100
 // Module: 2 - Quản lý vị trí tuyển dụng
 // Nội dung thực hiện: ViewModel đóng gói dữ liệu cho các màn hình vị trí tuyển dụng (ViTriTuyenDungController)
 // ==============================================================================
