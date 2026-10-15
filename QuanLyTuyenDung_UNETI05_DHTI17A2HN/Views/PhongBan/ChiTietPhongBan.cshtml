@@ -1,0 +1,187 @@
+@*
+    Họ và tên: Đỗ Thiện An
+    Mã sinh viên: 23103100082
+    Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
+    Nội dung: Màn hình Chi tiết phòng ban và danh sách các vị trí tuyển dụng trực thuộc (/PhongBan/ChiTietPhongBan/{id})
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.PhongBan
+@using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Helpers
+
+@{
+    ViewData["Title"] = "Chi tiết phòng ban - " + Model.TenPhongBan;
+    var laAdmin = Context.Session.GetVaiTro() == "Admin";
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h3 class="fw-bold text-primary mb-1">
+                <i class="bi bi-info-circle me-2"></i>Chi tiết phòng ban: @Model.TenPhongBan
+            </h3>
+            <span class="text-muted small">Mã phòng ban: #@Model.MaPhongBan</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="DanhSachPhongBan" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+            </a>
+            @if (laAdmin)
+            {
+                <a asp-action="CapNhatPhongBan" asp-route-id="@Model.MaPhongBan" class="btn btn-primary shadow-sm">
+                    <i class="bi bi-pencil-square me-1"></i>Cập nhật phòng ban
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Thông tin phòng ban -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-light border-0 py-3 rounded-top-4">
+                    <h5 class="fw-bold mb-0 text-secondary">
+                        <i class="bi bi-card-text me-2"></i>Thông tin chung
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Tên phòng ban:</dt>
+                        <dd class="col-sm-8 fw-bold fs-5 text-dark">@Model.TenPhongBan</dd>
+
+                        <dt class="col-sm-4 text-muted">Email liên hệ:</dt>
+                        <dd class="col-sm-8">
+                            @if (!string.IsNullOrEmpty(Model.EmailLienHe))
+                            {
+                                <a href="mailto:@Model.EmailLienHe" class="text-decoration-none">
+                                    <i class="bi bi-envelope me-1"></i>@Model.EmailLienHe
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa cập nhật email</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Trạng thái:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.TrangThai)
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success px-3 py-1">
+                                    <i class="bi bi-check-circle me-1"></i>Đang hoạt động
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary px-3 py-1">
+                                    <i class="bi bi-pause-circle me-1"></i>Ngưng hoạt động
+                                </span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Mô tả chức năng:</dt>
+                        <dd class="col-sm-8 text-secondary">
+                            @(string.IsNullOrWhiteSpace(Model.MoTa) ? "Chưa có thông tin mô tả chi tiết cho phòng ban này." : Model.MoTa)
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-primary-subtle text-primary-emphasis">
+                <div class="card-body p-4 d-flex flex-column justify-content-center text-center">
+                    <div class="mb-2">
+                        <i class="bi bi-briefcase fs-1 text-primary"></i>
+                    </div>
+                    <div class="fs-1 fw-bold text-primary">@(Model.DanhSachViTri?.Count ?? 0)</div>
+                    <div class="fw-semibold text-secondary">Vị trí tuyển dụng trực thuộc</div>
+                    <p class="small text-muted mt-2 mb-0">
+                        Theo Mục 5.5: Không được xóa phòng ban nếu đang có các vị trí tuyển dụng liên quan.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng các vị trí tuyển dụng trực thuộc phòng ban -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white py-3 rounded-top-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-list-check me-2 text-primary"></i>Các vị trí tuyển dụng thuộc @Model.TenPhongBan
+            </h5>
+            @if (laAdmin)
+            {
+                <a asp-controller="ViTriTuyenDung" asp-action="ThemMoiViTri" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Đăng tuyển vị trí mới
+                </a>
+            }
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-uppercase fs-7 text-secondary">
+                        <tr>
+                            <th class="ps-3 py-3">Mã</th>
+                            <th class="py-3">Tên vị trí</th>
+                            <th class="py-3 text-center">Chỉ tiêu</th>
+                            <th class="py-3">Yêu cầu trình độ</th>
+                            <th class="py-3">Kinh nghiệm</th>
+                            <th class="py-3">Hạn nộp hồ sơ</th>
+                            <th class="py-3 text-center">Trạng thái</th>
+                            <th class="py-3 text-end pe-3">Xem chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.DanhSachViTri == null || !Model.DanhSachViTri.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <i class="bi bi-folder2-open fs-2 d-block mb-1"></i>
+                                    Phòng ban này hiện chưa có vị trí tuyển dụng nào.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var vt in Model.DanhSachViTri)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-bold text-muted">#@vt.MaViTri</td>
+                                    <td class="fw-semibold">@vt.TenViTri</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border">@vt.SoLuongCanTuyen người</span>
+                                    </td>
+                                    <td>@vt.TrinhDoYeuCau</td>
+                                    <td>@vt.SoNamKinhNghiemToiThieu năm</td>
+                                    <td>
+                                        <i class="bi bi-calendar-event me-1 text-muted"></i>
+                                        @vt.HanNopHoSo.ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td class="text-center">
+                                        @if (vt.TrangThai == "Đang tuyển")
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success">Đang tuyển</span>
+                                        }
+                                        else if (vt.TrangThai == "Đã đóng")
+                                        {
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary">Đã đóng</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning-subtle text-warning border border-warning">@vt.TrangThai</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <a asp-controller="ViTriTuyenDung" asp-action="ChiTietViTri" asp-route-id="@vt.MaViTri" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-eye me-1"></i>Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

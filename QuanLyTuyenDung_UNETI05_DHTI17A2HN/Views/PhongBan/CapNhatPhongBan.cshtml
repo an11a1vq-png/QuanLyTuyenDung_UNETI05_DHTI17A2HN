@@ -1,0 +1,88 @@
+@*
+    Họ và tên: Đỗ Thiện An
+    Mã sinh viên: 23103100082
+    Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
+    Nội dung: Màn hình Cập nhật thông tin phòng ban (/PhongBan/CapNhatPhongBan/{id})
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.PhongBan
+
+@{
+    ViewData["Title"] = "Cập nhật phòng ban";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h3 class="fw-bold text-primary mb-0">
+                    <i class="bi bi-pencil-square me-2"></i>Cập nhật thông tin phòng ban
+                </h3>
+                <a asp-action="DanhSachPhongBan" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Quay lại danh sách
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <form asp-action="CapNhatPhongBan" asp-route-id="@Model.MaPhongBan" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="MaPhongBan" />
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">MÃ PHÒNG BAN</label>
+                            <input type="text" class="form-control bg-light" value="#@Model.MaPhongBan" readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TenPhongBan" class="form-label fw-semibold">
+                                Tên phòng ban <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="TenPhongBan" class="form-control form-control-lg" autofocus />
+                            <span asp-validation-for="TenPhongBan" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EmailLienHe" class="form-label fw-semibold">
+                                Email liên hệ
+                            </label>
+                            <input asp-for="EmailLienHe" type="email" class="form-control" />
+                            <span asp-validation-for="EmailLienHe" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MoTa" class="form-label fw-semibold">
+                                Mô tả chức năng & nhiệm vụ
+                            </label>
+                            <textarea asp-for="MoTa" rows="4" class="form-control"></textarea>
+                            <span asp-validation-for="MoTa" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check form-switch fs-5">
+                                <input asp-for="TrangThai" class="form-check-input" type="checkbox" id="trangThaiSwitch" />
+                                <label class="form-check-label fs-6 fw-semibold" for="trangThaiSwitch">
+                                    Đang hoạt động
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                            <a asp-action="DanhSachPhongBan" class="btn btn-secondary px-4">
+                                Hủy bỏ
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                                <i class="bi bi-check-lg me-1"></i>Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
