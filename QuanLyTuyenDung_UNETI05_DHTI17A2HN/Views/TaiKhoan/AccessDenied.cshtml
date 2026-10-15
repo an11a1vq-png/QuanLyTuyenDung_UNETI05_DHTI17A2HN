@@ -1,0 +1,37 @@
+@*
+    Họ và tên: Đỗ Thiện An
+    Mã sinh viên: 23103100082
+    Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
+    Nội dung: Màn hình Từ chối truy cập do không đủ quyền hạn (/TaiKhoan/AccessDenied)
+*@
+@{
+    ViewData["Title"] = "Từ chối truy cập";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center text-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5">
+                <div class="mb-4 text-danger">
+                    <i class="bi bi-shield-x" style="font-size: 5rem;"></i>
+                </div>
+                <h2 class="fw-bold text-danger mb-3">TỪ CHỐI TRUY CẬP (403)</h2>
+                <p class="text-secondary fs-5 mb-4">
+                    Tài khoản của bạn không có quyền hạn truy cập vào chức năng hoặc trang quản trị này.
+                </p>
+                <div class="alert alert-warning py-2 mb-4 small text-start">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Vui lòng liên hệ với <strong>Quản trị viên (Admin)</strong> nếu bạn cho rằng đây là một sự nhầm lẫn về phân quyền.
+                </div>
+                <div class="d-flex justify-content-center gap-3">
+                    <a asp-action="Index" asp-controller="Home" class="btn btn-outline-secondary px-4 py-2">
+                        <i class="bi bi-house me-1"></i>Trang chủ
+                    </a>
+                    <a asp-action="DangNhap" asp-controller="TaiKhoan" class="btn btn-primary px-4 py-2">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
