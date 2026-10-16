@@ -1,5 +1,5 @@
 ﻿// Họ và tên: Hoàng Dương
-// Mã sinh viên: [MãSV của bạn]
+// Mã sinh viên: [23103100117]
 // Nội dung thực hiện: Xây dựng LichPhongVanController, kiểm tra logic trùng lịch phỏng vấn bằng LINQ và cập nhật trạng thái.
 
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +35,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
 
         // 2. GET: Tạo lịch phỏng vấn mới
-        public async Task<IActionResult> Create(int? maHoSo)
+        public async Task<IActionResult> LapLichPhongVan(int? maHoSo)
         {
             if (maHoSo == null)
             {
@@ -54,14 +54,14 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             ViewBag.MaHoSo = maHoSo;
-            ViewBag.ThongTinHoSo = $"{hoSo.UngVien.HoTen} - Vị trí ID: {hoSo.MaViTri}";
+            ViewBag.ThongTinHoSo = $"{hoSo.UngVien?.HoTen} - Vị trí ID: {hoSo.MaViTri}";
             return View();
         }
 
         // 3. POST: Xử lý tạo lịch phỏng vấn kèm kiểm tra nghiệp vụ
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("MaHoSo,ThoiGianBatDau,ThoiGianKetThuc,HinhThucPhongVan,DiaDiemHoacLienKet,NguoiPhongVan,GhiChu")] LichPhongVan lichPhongVan)
+        public async Task<IActionResult> LapLichPhongVan([Bind("MaHoSo,ThoiGianBatDau,ThoiGianKetThuc,HinhThucPhongVan,DiaDiemHoacLienKet,NguoiPhongVan,GhiChu")] LichPhongVan lichPhongVan)
         {
             // Kiểm tra điều kiện thời gian cơ bản
             if (lichPhongVan.ThoiGianKetThuc <= lichPhongVan.ThoiGianBatDau)
@@ -75,7 +75,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             // Kiểm tra xem hồ sơ đã có lịch phỏng vấn đang hiệu lực nào chưa (trên các lịch chưa hủy)
-            var existingScheduleForCandidate = await _context.LichPhongVans
+            var existingScheduleForCandidate = await _context.LichPhongVan
                 .AnyAsync(l => l.MaHoSo == lichPhongVan.MaHoSo && l.TrangThai != "Đã hủy");
 
             if (existingScheduleForCandidate)

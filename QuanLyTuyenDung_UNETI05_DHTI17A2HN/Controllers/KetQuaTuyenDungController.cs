@@ -1,5 +1,5 @@
 ﻿// Họ và tên: Hoàng Dương
-// Mã sinh viên: [MãSV của bạn]
+// Mã sinh viên: [23103100117]
 // Nội dung thực hiện: Xây dựng KetQuaTuyenDungController quản lý điểm đánh giá và kết quả cuối cùng của ứng viên.
 
 using Microsoft.AspNetCore.Mvc;
@@ -33,7 +33,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         }
 
         // 2. GET: Nhập kết quả tuyển dụng cho hồ sơ
-        public async Task<IActionResult> Create(int? maHoSo)
+        public async Task<IActionResult> CapNhapKetQua(int? maHoSo)
         {
             if (maHoSo == null)
             {
@@ -59,14 +59,14 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             ViewBag.MaHoSo = maHoSo;
-            ViewBag.ThongTinHoSo = $"{hoSo.UngVien.HoTen} - Vị trí ID: {hoSo.MaViTri}";
+            ViewBag.ThongTinHoSo = $"{hoSo.UngVien?.HoTen} - Vị trí ID: {hoSo.MaViTri}";
             return View();
         }
 
         // 3. POST: Lưu kết quả tuyển dụng
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("MaHoSo,DiemDanhGia,NhanXet,KetQua")] KetQuaTuyenDung ketQuaTuyenDung)
+        public async Task<IActionResult> CapNhapKetQua([Bind("MaHoSo,DiemDanhGia,NhanXet,KetQua")] KetQuaTuyenDung ketQuaTuyenDung)
         {
             bool hasResult = await _context.KetQuaTuyenDung.AnyAsync(k => k.MaHoSo == ketQuaTuyenDung.MaHoSo);
             if (hasResult)
