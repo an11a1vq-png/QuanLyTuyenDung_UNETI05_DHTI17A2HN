@@ -129,7 +129,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             var dsHoSo = await _context.HoSoUngTuyen
                 .Include(h => h.ViTriTuyenDung)
-                    .ThenInclude(v => v.PhongBan)
+                .ThenInclude(v => v.PhongBan)
                 .Include(h => h.LichPhongVans)
                 .Include(h => h.KetQuaTuyenDung)
                 .Where(h => h.MaUngVien == ungVien.MaUngVien)
@@ -187,7 +187,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 // =========================================================
 
 // GET: Nhân sự xem danh sách toàn bộ hồ sơ ứng tuyển
-[HttpGet]
+        [HttpGet]
         public async Task<IActionResult> QuanLyDanhSach(
             string? search,
             string? phongBan,
