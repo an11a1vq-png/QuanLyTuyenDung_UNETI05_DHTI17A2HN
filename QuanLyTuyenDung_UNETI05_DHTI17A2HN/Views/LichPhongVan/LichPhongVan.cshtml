@@ -1,0 +1,82 @@
+﻿@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.LichPhongVan
+Họ và tên: Hoang Duong
+Mã sinh viên: 23103100117
+Module: 5 - Chống trùng lịch phỏng vấn,dashborard, Thống kê linq
+Nội dung: lập lịch phỏng vấn,,Form lập lịch phỏng vấn
+@{
+    ViewData["Title"] = "Lập Lịch Phỏng Vấn";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-calendar-plus me-2"></i>Lập Lịch Phỏng Vấn Mới</h4>
+        </div>
+        <div class="card-body">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <form asp-action="LapLichPhongVan" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Thông tin ứng viên & Hồ sơ</label>
+                    <input type="hidden" asp-for="MaHoSo" value="@ViewBag.MaHoSo" />
+                    <input type="text" class="form-control" value="@ViewBag.ThongTinHoSo" readonly />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ThoiGianBatDau" class="form-label fw-bold">Thời gian bắt đầu</label>
+                        <input asp-for="ThoiGianBatDau" type="datetime-local" class="form-control" />
+                        <span asp-validation-for="ThoiGianBatDau" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ThoiGianKetThuc" class="form-label fw-bold">Thời gian kết thúc</label>
+                        <input asp-for="ThoiGianKetThuc" type="datetime-local" class="form-control" />
+                        <span asp-validation-for="ThoiGianKetThuc" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="HinhThucPhongVan" class="form-label fw-bold">Hình thức phỏng vấn</label>
+                        <select asp-for="HinhThucPhongVan" class="form-select">
+                            <option value="Trực tiếp">Trực tiếp</option>
+                            <option value="Trực tuyến (Online)">Trực tuyến (Online)</option>
+                        </select>
+                        <span asp-validation-for="HinhThucPhongVan" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="NguoiPhongVan" class="form-label fw-bold">Người phỏng vấn / Hội đồng</label>
+                        <input asp-for="NguoiPhongVan" class="form-control" placeholder="Nhập tên người phỏng vấn..." />
+                        <span asp-validation-for="NguoiPhongVan" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="DiaDiemHoacLienKet" class="form-label fw-bold">Địa điểm / Link phòng họp Online</label>
+                    <input asp-for="DiaDiemHoacLienKet" class="form-control" placeholder="Phòng 302 - Tầng 3 hoặc Link Google Meet/MS Teams..." />
+                    <span asp-validation-for="DiaDiemHoacLienKet" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="GhiChu" class="form-label fw-bold">Ghi chú bổ sung</label>
+                    <textarea asp-for="GhiChu" class="form-control" rows="3" placeholder="Yêu cầu mang theo tài liệu, trang phục..."></textarea>
+                    <span asp-validation-for="GhiChu" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay lại</a>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Xác nhận lập lịch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
