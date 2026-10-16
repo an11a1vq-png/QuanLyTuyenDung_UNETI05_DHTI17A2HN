@@ -1,0 +1,271 @@
+﻿
+@* =========================================================
+   HỌ VÀ TÊN: Nguyễn Văn Khánh
+   MÃ SINH VIÊN: 23103100101
+   MODULE 4: SƠ TUYỂN HỒ SƠ ỨNG TUYỂN
+   CHỨC NĂNG: ĐỐI SÁNH NĂNG LỰC VÀ LƯU KẾT QUẢ SƠ TUYỂN
+   ========================================================= *@
+
+@* Model là một hồ sơ ứng tuyển.
+   Controller truyền hồ sơ đã kèm thông tin ứng viên
+   và vị trí tuyển dụng sang View. *@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.HoSoUngTuyen
+
+@{
+    ViewData["Title"] = "Sơ tuyển hồ sơ";
+
+    var ungVien = Model.UngVien;
+    var viTri = Model.ViTriTuyenDung;
+}
+
+<div class="container py-4">
+
+    <!-- TIÊU ĐỀ -->
+    <div class="mb-4">
+        <h2 class="fw-bold">Sơ tuyển hồ sơ ứng tuyển</h2>
+        <p class="text-muted">
+            Kiểm tra năng lực ứng viên và ghi nhận kết quả sơ tuyển.
+        </p>
+    </div>
+
+    <!-- THÔNG BÁO LỖI -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- THÔNG TIN ỨNG VIÊN -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">1. Thông tin ứng viên</h5>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Mã hồ sơ</label>
+                    <div class="fw-semibold">@Model.MaHoSo</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Ngày nộp</label>
+                    <div class="fw-semibold">
+                        @Model.NgayNop.ToString("dd/MM/yyyy")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Họ và tên</label>
+                    <div class="fw-semibold">
+                        @(ungVien?.HoTen ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Email</label>
+                    <div>
+                        @(ungVien?.Email ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Số điện thoại</label>
+                    <div>
+                        @(ungVien?.SoDienThoai ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Địa chỉ</label>
+                    <div>
+                        @(ungVien?.DiaChi ?? "Chưa cập nhật")
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ĐỐI SÁNH NĂNG LỰC -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-info text-dark">
+            <h5 class="mb-0">2. Đối sánh năng lực ứng viên</h5>
+        </div>
+
+        <div class="card-body">
+
+            <h6 class="fw-bold mb-3">Thông tin vị trí ứng tuyển</h6>
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Vị trí</label>
+                    <div class="fw-semibold">
+                        @(viTri?.TenViTri ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Phòng ban</label>
+                    <div>
+                        @(viTri?.PhongBan?.TenPhongBan ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Trình độ yêu cầu</label>
+                    <div>
+                        @(viTri?.TrinhDoYeuCau ?? "Không quy định")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">
+                        Kinh nghiệm tối thiểu
+                    </label>
+                    <div>
+                        @(viTri?.SoNamKinhNghiemToiThieu ?? 0) năm
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label text-muted">Yêu cầu ứng viên</label>
+                    <div class="border rounded p-3 bg-light"
+                         style="white-space: pre-line;">
+                        @(viTri?.YeuCauUngVien ?? "Chưa có thông tin")
+                    </div>
+                </div>
+
+            </div>
+
+            <hr />
+
+            <h6 class="fw-bold mb-3">Năng lực thực tế của ứng viên</h6>
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">
+                        Trình độ học vấn
+                    </label>
+                    <div class="fw-semibold">
+                        @(ungVien?.TrinhDoHocVan ?? "Chưa cập nhật")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">Chuyên ngành</label>
+                    <div>
+                        @(ungVien?.ChuyenNganh ?? "Chưa cập nhật")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted">
+                        Số năm kinh nghiệm
+                    </label>
+                    <div class="fw-semibold">
+                        @(ungVien?.SoNamKinhNghiem ?? 0) năm
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label text-muted">Kỹ năng</label>
+                    <div class="border rounded p-3 bg-light"
+                         style="white-space: pre-line;">
+                        @(ungVien?.KyNang ?? "Chưa cập nhật")
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="alert alert-info mt-4 mb-0">
+                <strong>Lưu ý:</strong>
+                Nhân sự cần xem xét tổng thể trình độ, chuyên ngành,
+                kinh nghiệm, kỹ năng và yêu cầu công việc trước khi
+                quyết định. Không tự động kết luận đạt hoặc không đạt
+                chỉ dựa trên một tiêu chí.
+            </div>
+
+        </div>
+    </div>
+
+    <!-- BIỂU MẪU SƠ TUYỂN -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">3. Quyết định sơ tuyển</h5>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-controller="HoSoUngTuyen"
+                  asp-action="SoTuyen"
+                  asp-route-id="@Model.MaHoSo"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       name="id"
+                       value="@Model.MaHoSo" />
+
+                <div class="mb-3">
+                    <label for="ketQua" class="form-label fw-semibold">
+                        Kết quả sơ tuyển <span class="text-danger">*</span>
+                    </label>
+
+                    <select id="ketQua"
+                            name="ketQua"
+                            class="form-select"
+                            required>
+                        <option value="">-- Chọn kết quả --</option>
+                        <option value="Đạt sơ tuyển">Đạt sơ tuyển</option>
+                        <option value="Không đạt sơ tuyển">
+                            Không đạt sơ tuyển
+                        </option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="nhanXetSoTuyen"
+                           class="form-label fw-semibold">
+                        Nhận xét sơ tuyển
+                    </label>
+
+                    <textarea id="nhanXetSoTuyen"
+                              name="nhanXetSoTuyen"
+                              class="form-control"
+                              rows="5"
+                              maxlength="1000"
+                              placeholder="Nhập nhận xét về năng lực, kinh nghiệm và mức độ phù hợp của ứng viên..."></textarea>
+
+                    <div class="form-text">
+                        Tối đa 1000 ký tự.
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <button type="submit"
+                            class="btn btn-success"
+                            onclick="return confirm('Bạn có chắc chắn muốn lưu kết quả sơ tuyển?');">
+                        Lưu kết quả sơ tuyển
+                    </button>
+
+                    <a asp-controller="HoSoUngTuyen"
+                       asp-action="QuanLyDanhSach"
+                       class="btn btn-outline-secondary">
+                        Quay lại danh sách
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
