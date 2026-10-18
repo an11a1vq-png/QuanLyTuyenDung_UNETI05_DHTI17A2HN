@@ -140,5 +140,19 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        // 1. GET: Danh sách toàn bộ lịch phỏng vấn
+        [HttpGet]
+        public async Task<IActionResult> LichPhongVan()
+        {
+            var danhSachLich = await _context.LichPhongVan
+                .Include(l => l.HoSoUngTuyen)
+                    .ThenInclude(h => h.UngVien)
+                .Include(l => l.HoSoUngTuyen)
+                    .ThenInclude(h => h.ViTriTuyenDung)
+                .OrderByDescending(l => l.ThoiGianBatDau)
+                .ToListAsync();
+
+            return View(danhSachLich);
+        }
     }
 }

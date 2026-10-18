@@ -134,5 +134,18 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
             return View(ketQuaTuyenDung);
         }
+        // 6. GET: Danh sách toàn bộ kết quả tuyển dụng
+        public async Task<IActionResult> KetQuaTuyenDung()
+        {
+            var danhSachKetQua = await _context.KetQuaTuyenDung
+                .Include(k => k.HoSoUngTuyen)
+                    .ThenInclude(h => h.UngVien)
+                .Include(k => k.HoSoUngTuyen)
+                    .ThenInclude(h => h.ViTriTuyenDung)
+                .OrderByDescending(k => k.NgayCapNhat)
+                .ToListAsync();
+
+            return View(danhSachKetQua);
+        }
     }
 }
