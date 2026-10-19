@@ -1,0 +1,127 @@
+@model IEnumerable<QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.LichPhongVan>
+@* ========================================================
+   Họ và tên: Hoàng Dương - MSSV: 23103100117
+   Module 5: Danh sách Lịch phỏng vấn (Quản lý trạng thái, hoàn thành & hủy lịch)
+   ======================================================== *@
+@{
+    ViewData["Title"] = "Danh sách lịch phỏng vấn";
+}
+<div class="container-fluid mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="text-primary fw-bold mb-1"><i class="bi bi-calendar-event me-2"></i>Quản Lý Lịch Phỏng Vấn</h2>
+            <p class="text-muted small mb-0">Theo dõi kế hoạch phỏng vấn, kiểm tra điều phối và chuyển trạng thái phỏng vấn</p>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th style="width: 70px;">Mã PV</th>
+                            <th>Ứng viên</th>
+                            <th>Vị trí tuyển dụng</th>
+                            <th>Thời gian phỏng vấn</th>
+                            <th>Hình thức & Địa điểm</th>
+                            <th>Người phỏng vấn</th>
+                            <th>Trạng thái</th>
+                            <th style="width: 220px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-center fw-bold">#@item.MaLichPhongVan</td>
+                                    <td>
+                                        <div class="fw-bold text-primary">@item.HoSoUngTuyen?.UngVien?.HoTen</div>
+                                        <small class="text-muted">Mã hồ sơ: #@item.MaHoSo</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold">@item.HoSoUngTuyen?.ViTriTuyenDung?.TenViTri</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold"><i class="bi bi-clock me-1 text-primary"></i>@item.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</div>
+                                        <small class="text-muted">Đến: @item.ThoiGianKetThuc.ToString("HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border mb-1">@item.HinhThucPhongVan</span>
+                                        <div class="small text-truncate" style="max-width: 200px;" title="@item.DiaDiemHoacLienKet">@item.DiaDiemHoacLienKet</div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold">@item.NguoiPhongVan</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.TrangThai == "Đã hoàn thành")
+                                        {
+                                            <span class="badge bg-success px-2 py-1">Đã hoàn thành</span>
+                                        }
+                                        else if (item.TrangThai == "Đã hủy")
+                                        {
+                                            <span class="badge bg-danger px-2 py-1">Đã hủy</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary px-2 py-1">Đã lên lịch</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.TrangThai == "Đã lên lịch")
+                                        {
+                                            <div class="d-flex justify-content-center gap-1">
+                                                <a asp-action="HoanThanh" asp-route-id="@item.MaLichPhongVan" class="btn btn-sm btn-success" onclick="return confirm('Xác nhận ứng viên đã hoàn thành buổi phỏng vấn này?');">
+                                                    <i class="bi bi-check-circle"></i> Hoàn thành
+                                                </a>
+                                                <form asp-action="HuyLich" asp-route-id="@item.MaLichPhongVan" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy lịch phỏng vấn này?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-x-circle"></i> Hủy
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else if (item.TrangThai == "Đã hoàn thành")
+                                        {
+                                            <a asp-controller="KetQuaTuyenDung" asp-action="CapNhatKetQua" asp-route-maHoSo="@item.MaHoSo" class="btn btn-sm btn-warning text-dark fw-bold">
+                                                <i class="bi bi-award"></i> Nhập kết quả
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Không khả dụng</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">Chưa có lịch phỏng vấn nào được thiết lập trong hệ thống.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
