@@ -1,0 +1,106 @@
+@model IEnumerable<QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.KetQuaTuyenDung>
+@* ========================================================
+   Họ và tên: Hoàng Dương - MSSV: 23103100117
+   Module 5: Danh sách Kết quả Tuyển dụng
+   ======================================================== *@
+@{
+    ViewData["Title"] = "Danh sách kết quả tuyển dụng";
+}
+<div class="container-fluid mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="text-primary fw-bold mb-1"><i class="bi bi-award me-2"></i>Kết Quả Đánh Giá Tuyển Dụng</h2>
+            <p class="text-muted small mb-0">Bảng tổng hợp điểm số đánh giá chuyên môn và quyết định tuyển dụng của Hội đồng</p>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0">
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th style="width: 70px;">Mã KQ</th>
+                            <th>Ứng viên</th>
+                            <th>Vị trí tuyển dụng</th>
+                            <th style="width: 130px;">Điểm đánh giá</th>
+                            <th style="width: 140px;">Kết luận</th>
+                            <th>Nhận xét hội đồng</th>
+                            <th style="width: 130px;">Ngày đánh giá</th>
+                            <th style="width: 110px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-center fw-bold">#@item.MaKetQua</td>
+                                    <td>
+                                        <div class="fw-bold text-primary">@item.HoSoUngTuyen?.UngVien?.HoTen</div>
+                                        <small class="text-muted">Mã hồ sơ: #@item.MaHoSo</small>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold">@item.HoSoUngTuyen?.ViTriTuyenDung?.TenViTri</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary fs-6 px-3 py-1">@item.DiemDanhGia.ToString("0.0") / 100</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.KetQua == "Trúng tuyển")
+                                        {
+                                            <span class="badge bg-success fs-6 px-3 py-1">
+                                                <i class="bi bi-check-circle me-1"></i>Trúng tuyển
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger fs-6 px-3 py-1">
+                                                <i class="bi bi-x-circle me-1"></i>Không trúng tuyển
+                                            </span>
+                                        }
+                                    </td>
+                                    <td style="max-width: 300px;">
+                                        <div class="text-truncate" title="@item.NhanXet">
+                                            @(string.IsNullOrWhiteSpace(item.NhanXet) ? "Không có nhận xét." : item.NhanXet)
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        @item.NgayCapNhat.ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-action="Edit" asp-route-id="@item.MaKetQua" class="btn btn-sm btn-outline-warning text-dark fw-semibold">
+                                            <i class="bi bi-pencil"></i> Sửa điểm
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">Chưa có kết quả đánh giá tuyển dụng nào được ghi nhận.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

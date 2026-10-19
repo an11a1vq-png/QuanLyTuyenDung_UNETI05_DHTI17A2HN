@@ -1,0 +1,449 @@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.ThongKeViewModel
+@* ========================================================
+   Họ và tên: Hoàng Dương - MSSV: 23103100117
+   Module 5: Dashboard và Thống Kê Tuyển Dụng
+   Nội dung: Màn hình Dashboard 9 chỉ số và 10 báo cáo thống kê bằng LINQ (Mục 9.5 & 9.6)
+   ======================================================== *@
+@{
+    ViewData["Title"] = "Dashboard & Thống Kê Tuyển Dụng";
+}
+
+<div class="container-fluid mt-4 mb-5">
+    <!-- TIÊU ĐỀ TRANG -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary fw-bold mb-1">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard & Thống Kê Tuyển Dụng
+            </h2>
+            <p class="text-muted small mb-0">Hệ thống báo cáo số liệu tổng quan và phân tích dữ liệu tuyển dụng bằng LINQ</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="LichPhongVan" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-calendar3 me-1"></i> Quản lý Lịch PV
+            </a>
+            <a asp-controller="KetQuaTuyenDung" asp-action="Index" class="btn btn-outline-success btn-sm">
+                <i class="bi bi-award me-1"></i> Quản lý Kết quả
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================================================== -->
+    <!-- PHẦN 1: 9 CHỈ SỐ DASHBOARD TỔNG QUAN (Mục 9.5 Đề tài 13) -->
+    <!-- ============================================================================== -->
+    <div class="row g-3 mb-4">
+        <!-- 1. Phòng ban -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-primary border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Tổng phòng ban</div>
+                            <h3 class="fw-bold text-primary mb-0 mt-1">@Model.TongSoPhongBan</h3>
+                        </div>
+                        <div class="bg-primary-subtle text-primary p-3 rounded-circle">
+                            <i class="bi bi-building fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Vị trí tuyển dụng -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-info border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Vị trí tuyển dụng</div>
+                            <h3 class="fw-bold text-info mb-0 mt-1">@Model.TongSoViTri</h3>
+                            <small class="text-success"><i class="bi bi-check-circle-fill"></i> @Model.SoViTriDangTuyen đang tuyển</small>
+                        </div>
+                        <div class="bg-info-subtle text-info p-3 rounded-circle">
+                            <i class="bi bi-briefcase fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Tổng ứng viên -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-secondary border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Tổng ứng viên</div>
+                            <h3 class="fw-bold text-secondary mb-0 mt-1">@Model.TongSoUngVien</h3>
+                        </div>
+                        <div class="bg-secondary-subtle text-secondary p-3 rounded-circle">
+                            <i class="bi bi-people fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Tổng hồ sơ -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-dark border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Tổng hồ sơ ứng tuyển</div>
+                            <h3 class="fw-bold text-dark mb-0 mt-1">@Model.TongSoHoSo</h3>
+                        </div>
+                        <div class="bg-dark-subtle text-dark p-3 rounded-circle">
+                            <i class="bi bi-file-earmark-person fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Hồ sơ chờ duyệt -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-warning border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Hồ sơ chờ duyệt</div>
+                            <h3 class="fw-bold text-warning mb-0 mt-1">@Model.SoHoSoChoDuyet</h3>
+                            <small class="text-muted">Cần sơ tuyển</small>
+                        </div>
+                        <div class="bg-warning-subtle text-warning p-3 rounded-circle">
+                            <i class="bi bi-hourglass-split fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Đạt sơ tuyển -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-primary border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Đạt sơ tuyển</div>
+                            <h3 class="fw-bold text-primary mb-0 mt-1">@Model.SoHoSoDatSoTuyen</h3>
+                            <small class="text-muted">Chờ lên lịch phỏng vấn</small>
+                        </div>
+                        <div class="bg-primary-subtle text-primary p-3 rounded-circle">
+                            <i class="bi bi-check2-circle fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Lịch phỏng vấn sắp tới -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-danger border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Lịch PV sắp tới</div>
+                            <h3 class="fw-bold text-danger mb-0 mt-1">@Model.SoLichPVSapToi</h3>
+                            <small class="text-muted">Thời gian từ hôm nay</small>
+                        </div>
+                        <div class="bg-danger-subtle text-danger p-3 rounded-circle">
+                            <i class="bi bi-calendar-check fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8 & 9. Ứng viên trúng tuyển & Tỷ lệ trúng tuyển -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm border-start border-success border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-semibold">Ứng viên trúng tuyển</div>
+                            <h3 class="fw-bold text-success mb-0 mt-1">@Model.SoUngVienTrungTuyen</h3>
+                            <small class="text-success fw-semibold">Tỷ lệ: @Model.TyLeTrungTuyenTrenPhongVan% / PV</small>
+                        </div>
+                        <div class="bg-success-subtle text-success p-3 rounded-circle">
+                            <i class="bi bi-trophy fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================================== -->
+    <!-- PHẦN 2: 10 BÁO CÁO THỐNG KÊ CHI TIẾT BẰNG LINQ (Mục 9.6 Đề tài 13) -->
+    <!-- ============================================================================== -->
+
+    <!-- HÀNG 1: THỐNG KÊ VỊ TRÍ THEO PHÒNG BAN & HỒ SƠ THEO TRẠNG THÁI -->
+    <div class="row g-4 mb-4">
+        <!-- 1. Vị trí theo phòng ban -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0 text-primary">
+                        <i class="bi bi-diagram-3 me-2"></i>1. Số vị trí tuyển dụng theo phòng ban
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Phòng ban</th>
+                                    <th class="text-center" style="width: 150px;">Số lượng vị trí</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.ViTriTheoPhongBan)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@item.Ten</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary fs-6 px-3">@item.SoLuong</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Hồ sơ theo trạng thái -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0 text-primary">
+                        <i class="bi bi-pie-chart me-2"></i>2. Phân bổ hồ sơ theo trạng thái
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Trạng thái hồ sơ</th>
+                                    <th class="text-center" style="width: 150px;">Số hồ sơ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.HoSoTheoTrangThai)
+                                {
+                                    string badgeClass = item.Ten switch
+                                    {
+                                        "Trúng tuyển" => "bg-success",
+                                        "Không trúng tuyển" => "bg-danger",
+                                        "Chờ duyệt" => "bg-warning text-dark",
+                                        "Đạt sơ tuyển" => "bg-info text-dark",
+                                        "Chờ phỏng vấn" => "bg-primary",
+                                        "Đã phỏng vấn" => "bg-secondary",
+                                        _ => "bg-dark"
+                                    };
+                                    <tr>
+                                        <td>
+                                            <span class="badge @badgeClass me-2">&bull;</span>
+                                            <span class="fw-semibold">@item.Ten</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge @badgeClass fs-6 px-3">@item.SoLuong</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HÀNG 2: SỐ HỒ SƠ THEO VỊ TRÍ & VỊ TRÍ NHIỀU HỒ SƠ NHẤT -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0 text-primary">
+                        <i class="bi bi-bar-chart-steps me-2"></i>3. Số hồ sơ theo từng vị trí tuyển dụng
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Vị trí tuyển dụng</th>
+                                    <th class="text-center" style="width: 150px;">Số hồ sơ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.HoSoTheoViTri)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@item.Ten</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary fs-6 px-3">@item.SoLuong</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <!-- Vị trí nhận nhiều hồ sơ nhất (Mục 9.6 #5) -->
+            <div class="card shadow-sm border-0 bg-primary text-white mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-star-fill text-warning fs-3 me-2"></i>
+                        <h5 class="card-title fw-bold mb-0">Vị trí nhận nhiều hồ sơ nhất</h5>
+                    </div>
+                    <h3 class="fw-bold mt-2 mb-1">@Model.ViTriNhieuHoSoNhat</h3>
+                    <p class="mb-0 fs-5">
+                        Tổng cộng: <span class="badge bg-warning text-dark fs-6 px-3">@Model.SoHoSoNhieuNhat hồ sơ</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Số ứng viên trúng tuyển theo phòng ban (Mục 9.6 #6) -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="fw-bold mb-0 text-success">
+                        <i class="bi bi-award-fill me-2"></i>4. Ứng viên trúng tuyển theo phòng ban
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in Model.TrungTuyenTheoPhongBan)
+                        {
+                            <li class="d-flex justify-content-between align-items-center list-group-item py-3">
+                                <span class="fw-semibold">@item.Ten</span>
+                                <span class="badge bg-success rounded-pill px-3 py-2 fs-6">@item.SoLuong trúng tuyển</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HÀNG 3: TỶ LỆ QUA SƠ TUYỂN THEO TỪNG VỊ TRÍ (Mục 9.6 #9) -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0 text-primary">
+                <i class="bi bi-percent me-2"></i>5. Tỷ lệ hồ sơ qua sơ tuyển theo từng vị trí tuyển dụng
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Vị trí tuyển dụng</th>
+                            <th class="text-center" style="width: 140px;">Tổng hồ sơ</th>
+                            <th class="text-center" style="width: 160px;">Đã qua sơ tuyển</th>
+                            <th style="width: 320px;">Tỷ lệ đạt sơ tuyển</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.TyLeSoTuyenTheoViTri)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@item.TenViTri</td>
+                                <td class="text-center">@item.TongSoHoSo</td>
+                                <td class="text-center fw-bold text-success">@item.SoLuongQuaSoTuyen</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                                            <div class="progress-bar @(item.TyLePhanTram >= 70 ? "bg-success" : (item.TyLePhanTram >= 40 ? "bg-primary" : "bg-warning"))" 
+                                                 role="progressbar" 
+                                                 style="width: @item.TyLePhanTram%" 
+                                                 aria-valuenow="@item.TyLePhanTram" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <span class="fw-bold small" style="width: 50px;">@item.TyLePhanTram%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- HÀNG 4: XU HƯỚNG NỘP HỒ SƠ & PHỎNG VẤN THEO THÁNG (Mục 9.6 #7 & #8) -->
+    <div class="row g-4">
+        <!-- Hồ sơ nộp theo tháng -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0 text-primary">
+                        <i class="bi bi-calendar-month me-2"></i>6. Số hồ sơ nộp theo tháng
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tháng / Năm</th>
+                                <th class="text-center" style="width: 150px;">Số hồ sơ nộp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.HoSoTheoThang)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@item.Ten</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary fs-6 px-3">@item.SoLuong hồ sơ</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phỏng vấn theo tháng -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0 text-primary">
+                        <i class="bi bi-camera-video me-2"></i>7. Số cuộc phỏng vấn tổ chức theo tháng
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tháng / Năm</th>
+                                <th class="text-center" style="width: 150px;">Số cuộc phỏng vấn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.PhongVanTheoThang)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@item.Ten</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info text-dark fs-6 px-3">@item.SoLuong buổi</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
