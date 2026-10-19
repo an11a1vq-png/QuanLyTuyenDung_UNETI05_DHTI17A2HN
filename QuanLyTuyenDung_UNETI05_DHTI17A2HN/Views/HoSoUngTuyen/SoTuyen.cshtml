@@ -1,4 +1,4 @@
-﻿
+
 @* =========================================================
    HỌ VÀ TÊN: Nguyễn Văn Khánh
    MÃ SINH VIÊN: 23103100101
@@ -169,6 +169,14 @@
                     </label>
                     <div class="fw-semibold">
                         @(ungVien?.SoNamKinhNghiem ?? 0) năm
+                        @if ((ungVien?.SoNamKinhNghiem ?? 0) >= (viTri?.SoNamKinhNghiemToiThieu ?? 0))
+                        {
+                            <span class="badge bg-success ms-2">Đạt yêu cầu tối thiểu (&ge; @(viTri?.SoNamKinhNghiemToiThieu ?? 0) năm)</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger ms-2">Dưới yêu cầu tối thiểu (@(viTri?.SoNamKinhNghiemToiThieu ?? 0) năm)</span>
+                        }
                     </div>
                 </div>
 

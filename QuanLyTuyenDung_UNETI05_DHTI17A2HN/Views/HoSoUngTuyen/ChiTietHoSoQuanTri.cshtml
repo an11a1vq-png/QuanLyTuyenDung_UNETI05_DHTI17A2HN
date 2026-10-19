@@ -1,4 +1,4 @@
-﻿
+
 @* =========================================================
    HỌ VÀ TÊN: Nguyễn Văn Khánh
    MÃ SINH VIÊN: 23103100101
@@ -308,24 +308,107 @@
     @* KHỐI 6: THAO TÁC THEO TRẠNG THÁI
        Chỉ hiển thị nút sơ tuyển khi hồ sơ còn chờ duyệt.
        Việc chuyển trạng thái phải được kiểm tra ở Controller. *@
-    <div class="d-flex flex-wrap gap-2">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold">4. Quản lý chuyển trạng thái và thao tác</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.TrangThai != "Đã hủy" && Model.TrangThai != "Không đạt sơ tuyển" && Model.TrangThai != "Trúng tuyển" && Model.TrangThai != "Không trúng tuyển")
+            {
+                <form asp-controller="HoSoUngTuyen"
+                      asp-action="DuyetChuyenTrangThai"
+                      method="post"
+                      class="row g-3 align-items-center mb-3">
 
-        @if (Model.TrangThai == "Chờ duyệt")
-        {
-            <a asp-controller="HoSoUngTuyen"
-               asp-action="SoTuyen"
-               asp-route-id="@Model.MaHoSo"
-               class="btn btn-primary">
-                Tiến hành sơ tuyển
-            </a>
-        }
+                    @Html.AntiForgeryToken()
 
-        <a asp-controller="HoSoUngTuyen"
-           asp-action="QuanLyDanhSach"
-           class="btn btn-outline-secondary">
-            Quay lại danh sách
-        </a>
+                    <input type="hidden" name="id" value="@Model.MaHoSo" />
 
+                    <div class="col-auto">
+                        <label for="trangThaiMoi" class="col-form-label fw-semibold">
+                            Chuyển sang trạng thái:
+                        </label>
+                    </div>
+
+                    <div class="col-auto">
+                        <select id="trangThaiMoi" name="trangThaiMoi" class="form-select" required>
+                            <option value="">-- Chọn trạng thái tiếp theo --</option>
+                            @if (Model.TrangThai == "Chờ duyệt")
+                            {
+                                <option value="Đạt sơ tuyển">Đạt sơ tuyển</option>
+                                <option value="Không đạt sơ tuyển">Không đạt sơ tuyển</option>
+                                <option value="Đã hủy">Đã hủy</option>
+                            }
+                            else if (Model.TrangThai == "Đạt sơ tuyển")
+                            {
+                                <option value="Chờ phỏng vấn">Chờ phỏng vấn</option>
+                                <option value="Đã hủy">Đã hủy</option>
+                            }
+                            else if (Model.TrangThai == "Chờ phỏng vấn")
+                            {
+                                <option value="Đã phỏng vấn">Đã phỏng vấn</option>
+                                <option value="Đã hủy">Đã hủy</option>
+                            }
+                            else if (Model.TrangThai == "Đã phỏng vấn")
+                            {
+                                <option value="Trúng tuyển">Trúng tuyển (Kiểm tra chỉ tiêu)</option>
+                                <option value="Không trúng tuyển">Không trúng tuyển</option>
+                                <option value="Đã hủy">Đã hủy</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-auto">
+                        <button type="submit"
+                                class="btn btn-warning"
+                                onclick="return confirm('Bạn có chắc chắn muốn duyệt chuyển trạng thái hồ sơ này?');">
+                            Cập nhật trạng thái
+                        </button>
+                    </div>
+                </form>
+                <hr />
+            }
+
+            <div class="d-flex flex-wrap gap-2">
+
+                @if (Model.TrangThai == "Chờ duyệt")
+                {
+                    <a asp-controller="HoSoUngTuyen"
+                       asp-action="SoTuyen"
+                       asp-route-id="@Model.MaHoSo"
+                       class="btn btn-primary">
+                        Tiến hành sơ tuyển
+                    </a>
+                }
+
+                @if (Model.TrangThai == "Đạt sơ tuyển")
+                {
+                    <a asp-controller="LichPhongVan"
+                       asp-action="Create"
+                       asp-route-maHoSo="@Model.MaHoSo"
+                       class="btn btn-success">
+                        Lập lịch phỏng vấn
+                    </a>
+                }
+
+                @if (Model.TrangThai == "Đã phỏng vấn")
+                {
+                    <a asp-controller="KetQuaTuyenDung"
+                       asp-action="Create"
+                       asp-route-maHoSo="@Model.MaHoSo"
+                       class="btn btn-info text-white">
+                        Ghi nhận kết quả
+                    </a>
+                }
+
+                <a asp-controller="HoSoUngTuyen"
+                   asp-action="QuanLyDanhSach"
+                   class="btn btn-outline-secondary">
+                    Quay lại danh sách
+                </a>
+
+            </div>
+        </div>
     </div>
 
 </div>

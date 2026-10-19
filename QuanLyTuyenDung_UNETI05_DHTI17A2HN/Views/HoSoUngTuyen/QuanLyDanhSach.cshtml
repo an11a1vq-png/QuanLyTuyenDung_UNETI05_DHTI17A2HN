@@ -1,4 +1,4 @@
-﻿@* =========================================================
+@* =========================================================
    HỌ VÀ TÊN: Nguyễn Văn Khánh
    MÃ SINH VIÊN: 23103100101
    MODULE 4: TIẾP NHẬN VÀ QUẢN LÝ HỒ SƠ ỨNG TUYỂN
@@ -288,6 +288,15 @@
                                                    asp-route-id="@hoSo.MaHoSo"
                                                    class="btn btn-primary btn-sm">
                                                     Sơ tuyển
+                                                </a>
+                                            }
+                                            else if (hoSo.TrangThai == "Đạt sơ tuyển")
+                                            {
+                                                <a asp-controller="LichPhongVan"
+                                                   asp-action="Create"
+                                                   asp-route-maHoSo="@hoSo.MaHoSo"
+                                                   class="btn btn-outline-success btn-sm">
+                                                    Lập lịch
                                                 </a>
                                             }
 
