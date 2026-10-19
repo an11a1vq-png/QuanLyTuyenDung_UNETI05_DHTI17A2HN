@@ -19,6 +19,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data
         {
         }
 
+
         // Khai báo đầy đủ 7 DbSet theo thiết kế CSDL Đề tài 13
         public DbSet<TaiKhoan> TaiKhoan { get; set; } = null!;
         public DbSet<PhongBan> PhongBan { get; set; } = null!;
