@@ -11,6 +11,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 var appDataPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
+if (!Directory.Exists(appDataPath))
+{
+    Directory.CreateDirectory(appDataPath);
+}
 AppDomain.CurrentDomain.SetData("DataDirectory", appDataPath);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -29,6 +33,22 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+// Tự động kiểm tra và khởi tạo Database / Migration nếu chưa có
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        DbInitializer.Initialize(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Đã xảy ra lỗi trong quá trình tự động khởi tạo cơ sở dữ liệu.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
