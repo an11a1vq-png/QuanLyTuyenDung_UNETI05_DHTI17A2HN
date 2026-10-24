@@ -384,7 +384,7 @@
                 @if (Model.TrangThai == "Đạt sơ tuyển")
                 {
                     <a asp-controller="LichPhongVan"
-                       asp-action="Create"
+                       asp-action="LapLichPhongVan"
                        asp-route-maHoSo="@Model.MaHoSo"
                        class="btn btn-success">
                         Lập lịch phỏng vấn
@@ -394,7 +394,7 @@
                 @if (Model.TrangThai == "Đã phỏng vấn")
                 {
                     <a asp-controller="KetQuaTuyenDung"
-                       asp-action="Create"
+                       asp-action="CapNhatKetQua"
                        asp-route-maHoSo="@Model.MaHoSo"
                        class="btn btn-info text-white">
                         Ghi nhận kết quả
