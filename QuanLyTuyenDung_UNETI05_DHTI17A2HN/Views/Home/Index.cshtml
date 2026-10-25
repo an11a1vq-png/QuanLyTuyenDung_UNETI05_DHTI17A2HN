@@ -1,8 +1,527 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models
+@using Microsoft.EntityFrameworkCore
+@inject QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data.ApplicationDbContext _context
+
+@{
+    ViewData["Title"] = "Hệ Thống Tuyển Dụng & Việc Làm - UNETI";
+
+    // 1. Lấy danh sách vị trí đang tuyển trực tiếp từ CSDL SQL Server
+    var danhSachViecLam = _context.ViTriTuyenDung
+        .Include(v => v.PhongBan)
+        .Where(v => v.TrangThai == "Đang tuyển" && v.HanNopHoSo >= DateTime.Today)
+        .OrderByDescending(v => v.NgayBatDauNhanHoSo)
+        .Take(6)
+        .ToList();
+
+    // Dự phòng nếu hạn nộp ở dữ liệu mẫu quá khứ thì lấy các vị trí đang mở
+    if (!danhSachViecLam.Any())
+    {
+        danhSachViecLam = _context.ViTriTuyenDung
+            .Include(v => v.PhongBan)
+            .Where(v => v.TrangThai == "Đang tuyển")
+            .Take(6)
+            .ToList();
+    }
+
+    // 2. Thống kê dữ liệu thật từ hệ thống CSDL
+    var tongSoViecLam = _context.ViTriTuyenDung.Count(v => v.TrangThai == "Đang tuyển");
+    var tongSoPhongBan = _context.PhongBan.Count(p => p.TrangThai);
+    if (tongSoPhongBan == 0) { tongSoPhongBan = _context.PhongBan.Count(); }
+    var danhSachPhongBan = _context.PhongBan.Where(p => p.TrangThai).OrderBy(p => p.TenPhongBan).ToList();
+    if (!danhSachPhongBan.Any()) { danhSachPhongBan = _context.PhongBan.OrderBy(p => p.TenPhongBan).ToList(); }
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    /* Bảng màu nhận diện UNETI & phong cách hiện đại */
+    :root {
+        --uneti-navy: #071f3b;
+        --uneti-blue: #005baa;
+        --uneti-blue-hover: #004b8d;
+        --uneti-light-blue: #e0f2fe;
+        --accent-green: #00b14f;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --card-border: #e2e8f0;
+    }
+
+    /* Hero Banner Section */
+    .hero-banner-card {
+        background: linear-gradient(135deg, #071a33 0%, #0c3563 50%, #005baa 100%);
+        border-radius: 20px;
+        color: #ffffff;
+        padding: 48px 32px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 16px 36px rgba(7, 26, 51, 0.2);
+    }
+    .hero-banner-card::before {
+        content: "";
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(0, 91, 170, 0.35) 0%, rgba(255, 255, 255, 0) 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .hero-badge-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #ffd166;
+        margin-bottom: 18px;
+    }
+
+    /* Floating Search Box */
+    .floating-search-box {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 16px 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        color: var(--text-dark);
+        margin-top: 28px;
+    }
+    .search-input-field {
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 11px 16px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .search-input-field:focus {
+        border-color: var(--uneti-blue);
+        box-shadow: 0 0 0 3px rgba(0, 91, 170, 0.15);
+        outline: none;
+    }
+    .btn-search-action {
+        background-color: var(--uneti-blue);
+        color: #ffffff;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        padding: 11px 24px;
+        transition: all 0.2s;
+        font-size: 15px;
+    }
+    .btn-search-action:hover {
+        background-color: var(--uneti-blue-hover);
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(0, 91, 170, 0.35);
+    }
+
+    /* Thẻ thống kê 4 con số */
+    .stat-counter-card {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        padding: 20px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-counter-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    }
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    /* Thẻ vị trí tuyển dụng */
+    .job-card-modern {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        padding: 20px;
+        transition: all 0.25s ease-in-out;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+    }
+    .job-card-modern:hover {
+        border-color: var(--uneti-blue);
+        box-shadow: 0 12px 28px rgba(0, 91, 170, 0.12);
+        transform: translateY(-4px);
+    }
+    .job-dept-badge {
+        background-color: #eff6ff;
+        color: #1d4ed8;
+        font-weight: 700;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .job-tag-pill {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 12px;
+        padding: 4px 9px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Khối phân luồng Ứng viên & Nhân sự */
+    .cta-role-card {
+        border-radius: 16px;
+        padding: 28px;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+    .cta-role-card.for-candidate {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border-color: #bfdbfe;
+    }
+    .cta-role-card.for-hr {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border-color: #bbf7d0;
+    }
+
+    /* Trụ cột môi trường làm việc UNETI */
+    .pillar-card {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+</style>
+
+<div class="mb-5">
+    @* =========================================================================
+       1. HERO BANNER: CỔNG TUYỂN DỤNG CÁN BỘ & NHÂN SỰ UNETI (ĐỀ TÀI 13)
+       ========================================================================= *@
+    <div class="hero-banner-card mt-2">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="hero-badge-tag">
+                    <i class="bi bi-patch-check-fill text-warning"></i>
+                    <span>HỆ THỐNG TUYỂN DỤNG & VIỆC LÀM - UNETI</span>
+                </div>
+                <h1 class="display-6 fw-bold mb-3 text-white">
+                    Hệ Thống Quản Lý Tuyển Dụng & Hồ Sơ Ứng Viên UNETI
+                </h1>
+                <p class="lead text-light mb-0" style="opacity: 0.9; font-size: 16px;">
+                    Cổng tiếp nhận hồ sơ, sơ tuyển và quản lý quy trình tuyển dụng nhân sự, kỹ sư phần mềm, QA/QC và chuyên viên chuyên môn tại UNETI.
+                </p>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block">
+                <div style="font-size: 90px; opacity: 0.85; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));">
+                    🏛️
+                </div>
+            </div>
+        </div>
+
+        @* ---------- THANH TÌM KIẾM THEO PHÒNG BAN & CHUYÊN MÔN ---------- *@
+        <div class="floating-search-box">
+            <form asp-controller="ViTriTuyenDung" asp-action="ViecLam" method="get">
+                <div class="row g-2 align-items-center">
+                    <div class="col-lg-5 col-md-12">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-muted ps-2"><i class="bi bi-search"></i></span>
+                            <input type="text" name="searchString" class="form-control search-input-field border-start-0" 
+                                   placeholder="Vị trí công việc, chuyên môn: Lập trình viên, Kế toán, Nhân sự..." />
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-muted ps-2"><i class="bi bi-building"></i></span>
+                            <select name="maPhongBan" class="form-select search-input-field border-start-0">
+                                <option value="">Tất cả phòng ban</option>
+                                @foreach (var pb in danhSachPhongBan)
+                                {
+                                    <option value="@pb.MaPhongBan">@pb.TenPhongBan</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <select name="trinhDo" class="form-select search-input-field">
+                            <option value="">Tất cả trình độ</option>
+                            <option value="Đại học">Đại học</option>
+                            <option value="Cao đẳng">Cao đẳng</option>
+                            <option value="Thạc sĩ">Thạc sĩ</option>
+                            <option value="Tiến sĩ">Tiến sĩ</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-12">
+                        <button type="submit" class="btn btn-search-action w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-search"></i>
+                            <span>TÌM VỊ TRÍ</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="d-flex align-items-center flex-wrap gap-2 mt-3 pt-2 border-top small text-muted">
+                <span class="fw-semibold text-secondary"><i class="bi bi-tags-fill text-primary me-1"></i>Đơn vị tuyển dụng:</span>
+                <a asp-controller="ViTriTuyenDung" asp-action="ViecLam" asp-route-searchString="Công nghệ thông tin" class="text-decoration-none badge bg-light text-dark border">#Phòng CNTT</a>
+                <a asp-controller="ViTriTuyenDung" asp-action="ViecLam" asp-route-searchString="Kế toán" class="text-decoration-none badge bg-light text-dark border">#Phòng Kế toán - Tài chính</a>
+                <a asp-controller="ViTriTuyenDung" asp-action="ViecLam" asp-route-searchString="Tuyển dụng" class="text-decoration-none badge bg-light text-dark border">#Phòng Nhân sự</a>
+                <a asp-controller="ViTriTuyenDung" asp-action="ViecLam" asp-route-searchString="Marketing" class="text-decoration-none badge bg-light text-dark border">#Phòng Truyền thông</a>
+                <a asp-controller="ViTriTuyenDung" asp-action="ViecLam" asp-route-searchString=".NET" class="text-decoration-none badge bg-light text-dark border">#Lập trình viên .NET</a>
+            </div>
+        </div>
+    </div>
+
+    @* =========================================================================
+       2. KHỐI THỐNG KÊ 4 CON SỐ NGHIỆP VỤ (Lấy thật từ SQL Server)
+       ========================================================================= *@
+    <div class="row g-3 my-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-counter-card d-flex align-items-center gap-3">
+                <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-buildings"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0 text-dark">@(tongSoPhongBan)+</h3>
+                    <div class="small text-muted">Phòng ban & Đơn vị</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-counter-card d-flex align-items-center gap-3">
+                <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0 text-dark">@(tongSoViecLam)+</h3>
+                    <div class="small text-muted">Vị trí đang nhận hồ sơ</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-counter-card d-flex align-items-center gap-3">
+                <div class="stat-icon-wrapper bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0 text-dark">100%</h3>
+                    <div class="small text-muted">Quy trình minh bạch</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-counter-card d-flex align-items-center gap-3">
+                <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0 text-dark">5 Chặng</h3>
+                    <div class="small text-muted">Quy trình chuẩn hóa</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* =========================================================================
+       3. DANH SÁCH VỊ TRÍ TUYỂN DỤNG THEO PHÒNG BAN (Đọc thật từ CSDL)
+       ========================================================================= *@
+    <div class="d-flex justify-content-between align-items-end mb-3 mt-5">
+        <div>
+            <h3 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                <span>Vị trí tuyển dụng mới nhất theo phòng ban</span>
+                <span class="badge bg-primary fs-6 rounded-pill">Đang nhận hồ sơ</span>
+            </h3>
+            <p class="text-muted small mb-0">Nhu cầu bổ sung nhân sự của các phòng ban chuyên môn tại UNETI</p>
+        </div>
+        <div>
+            <a asp-controller="ViTriTuyenDung" asp-action="ViecLam" class="btn btn-outline-primary btn-sm fw-semibold rounded-pill px-3">
+                Xem toàn bộ (@tongSoViecLam vị trí) &rarr;
+            </a>
+        </div>
+    </div>
+
+    @if (!danhSachViecLam.Any())
+    {
+        <div class="alert alert-info text-center py-4">
+            <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
+            Hiện tại các đơn vị đang tổng hợp nhu cầu tuyển dụng. Vui lòng quay lại sau!
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var item in danhSachViecLam)
+            {
+                var soNgayConLai = (item.HanNopHoSo - DateTime.Today).Days;
+                var sapHetHan = soNgayConLai >= 0 && soNgayConLai <= 7;
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="job-card-modern">
+                        <!-- Header thẻ: Icon & Tiêu đề -->
+                        <div class="d-flex gap-3 align-items-start mb-2">
+                            <div class="rounded-3 bg-light border p-2 text-primary d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; min-width: 48px;">
+                                <i class="bi bi-person-badge fs-4"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold mb-1">
+                                    <a asp-controller="ViTriTuyenDung" asp-action="ChiTietViTri" asp-route-id="@item.MaViTri" class="text-dark text-decoration-none">
+                                        @item.TenViTri
+                                    </a>
+                                </h6>
+                                <div class="text-muted small">
+                                    <i class="bi bi-building me-1"></i>@(item.PhongBan?.TenPhongBan ?? "UNETI")
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tag thông tin phòng ban & yêu cầu -->
+                        <div class="d-flex flex-wrap gap-2 my-2">
+                            <span class="job-dept-badge">
+                                <i class="bi bi-people-fill"></i>Tuyển: @item.SoLuongCanTuyen chỉ tiêu
+                            </span>
+                            <span class="job-tag-pill">
+                                <i class="bi bi-mortarboard"></i>@(item.TrinhDoYeuCau ?? "Đại học")
+                            </span>
+                            <span class="job-tag-pill">
+                                <i class="bi bi-clock-history"></i>@(item.SoNamKinhNghiemToiThieu > 0 ? $"{item.SoNamKinhNghiemToiThieu} năm KN" : "Không yêu cầu KN")
+                            </span>
+                            @if (sapHetHan)
+                            {
+                                <span class="badge bg-danger rounded-pill align-self-center">
+                                    Còn @soNgayConLai ngày
+                                </span>
+                            }
+                        </div>
+
+                        <!-- Tóm tắt mô tả công việc -->
+                        <p class="text-muted small my-2 text-truncate" title="@item.MoTaCongViec">
+                            @item.MoTaCongViec
+                        </p>
+
+                        <!-- Footer thẻ việc làm: Nút Nộp hồ sơ & Chi tiết -->
+                        <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">
+                                <i class="bi bi-calendar-event me-1"></i>Hạn nộp: @item.HanNopHoSo.ToString("dd/MM/yyyy")
+                            </span>
+                            <div class="d-flex gap-2">
+                                <a asp-controller="ViTriTuyenDung" asp-action="ChiTietViTri" asp-route-id="@item.MaViTri" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5">
+                                    Chi tiết
+                                </a>
+                                <a asp-controller="HoSoUngTuyen" asp-action="NopHoSo" asp-route-id="@item.MaViTri" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" style="background-color: var(--uneti-blue); border: none;">
+                                    Nộp hồ sơ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @* =========================================================================
+       4. PHÂN LUỒNG: DÀNH CHO ỨNG VIÊN & CÁN BỘ NHÂN SỰ (Khớp 100% Đề tài 13)
+       ========================================================================= *@
+    <div class="row g-4 my-5">
+        <div class="col-md-6">
+            <div class="cta-role-card for-candidate h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <span class="badge bg-primary px-3 py-1.5 rounded-pill mb-2">🎓 DÀNH CHO ỨNG VIÊN (MODULE 3)</span>
+                    <h4 class="fw-bold text-dark mt-1">Tìm vị trí & Nộp hồ sơ trực tuyến</h4>
+                    <p class="text-secondary small mb-3">
+                        Đăng ký tài khoản, hoàn thiện thông tin cá nhân và nộp hồ sơ ứng tuyển vào vị trí chuyên môn phù hợp. Theo dõi trực tiếp trạng thái thẩm định hồ sơ và lịch hẹn phỏng vấn.
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a asp-controller="ViTriTuyenDung" asp-action="ViecLam" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        Xem vị trí đang tuyển
+                    </a>
+                    <a asp-controller="TaiKhoan" asp-action="DangKy" class="btn btn-outline-primary rounded-pill px-3">
+                        Đăng ký ứng viên
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="cta-role-card for-hr h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <span class="badge bg-success px-3 py-1.5 rounded-pill mb-2">👔 DÀNH CHO NHÂN SỰ & QUẢN TRỊ (MODULE 1, 4, 5)</span>
+                    <h4 class="fw-bold text-dark mt-1">Quản trị quy trình tuyển dụng chuẩn hóa</h4>
+                    <p class="text-secondary small mb-3">
+                        Quản lý cơ cấu phòng ban, đăng vị trí tuyển dụng, tiếp nhận hồ sơ, thực hiện sơ tuyển duyệt/từ chối, thiết lập lịch phỏng vấn và công bố kết quả tuyển dụng chính thức.
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a asp-controller="TaiKhoan" asp-action="DangNhap" class="btn btn-success rounded-pill px-4 fw-bold" style="background-color: var(--accent-green); border: none;">
+                        Đăng nhập quản trị
+                    </a>
+                    <a asp-controller="ThongKe" asp-action="Index" class="btn btn-outline-success rounded-pill px-3">
+                        Báo cáo thống kê
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* =========================================================================
+       5. CAM KẾT MÔI TRƯỜNG LÀM VIỆC TẠI UNETI
+       ========================================================================= *@
+    <div class="py-4 border-top mt-4">
+        <div class="text-center mb-4">
+            <p class="text-muted small fw-semibold text-uppercase mb-1 tracking-wide">
+                MÔI TRƯỜNG CÔNG TÁC & PHÁT TRIỂN NGHỀ NGHIỆP TẠI UNETI
+            </p>
+            <h5 class="fw-bold text-dark">Vì sao nên gia nhập đội ngũ nhân sự tại UNETI?</h5>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-3">
+                <div class="pillar-card h-100">
+                    <i class="bi bi-briefcase-fill fs-3 text-primary"></i>
+                    <div>
+                        <div class="fw-bold text-dark small">Môi trường chuyên nghiệp</div>
+                        <div class="text-muted" style="font-size: 11px;">Văn hóa làm việc năng động, sáng tạo và gắn kết</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="pillar-card h-100">
+                    <i class="bi bi-award-fill fs-3 text-success"></i>
+                    <div>
+                        <div class="fw-bold text-dark small">Đãi ngộ toàn diện</div>
+                        <div class="text-muted" style="font-size: 11px;">Chính sách lương thưởng cạnh tranh, phúc lợi đầy đủ</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="pillar-card h-100">
+                    <i class="bi bi-graph-up-arrow fs-3 text-info"></i>
+                    <div>
+                        <div class="fw-bold text-dark small">Lộ trình thăng tiến</div>
+                        <div class="text-muted" style="font-size: 11px;">Được đào tạo nâng cao chuyên môn và kỹ năng</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="pillar-card h-100">
+                    <i class="bi bi-laptop-fill fs-3 text-warning"></i>
+                    <div>
+                        <div class="fw-bold text-dark small">Trang thiết bị hiện đại</div>
+                        <div class="text-muted" style="font-size: 11px;">Hệ thống phần mềm, phòng lab và công nghệ tiên tiến</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
