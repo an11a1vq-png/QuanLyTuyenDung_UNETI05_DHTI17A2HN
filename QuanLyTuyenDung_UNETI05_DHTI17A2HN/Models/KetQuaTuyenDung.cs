@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models;
@@ -15,12 +15,12 @@ public class KetQuaTuyenDung
     public int MaHoSo { get; set; }
 
     [ForeignKey("MaHoSo")]
-    public virtual HoSoUngTuyen HoSoUngTuyen { get; set; }
+    public virtual HoSoUngTuyen? HoSoUngTuyen { get; set; }
 
     [Range(0, 100, ErrorMessage = "Điểm đánh giá phải từ 0 đến 100")]
     public double DiemDanhGia { get; set; }
 
-    public string NhanXet { get; set; }
+    public string? NhanXet { get; set; }
 
     [Required(ErrorMessage = "Kết quả tuyển dụng không được để trống")]
     [StringLength(50)]
