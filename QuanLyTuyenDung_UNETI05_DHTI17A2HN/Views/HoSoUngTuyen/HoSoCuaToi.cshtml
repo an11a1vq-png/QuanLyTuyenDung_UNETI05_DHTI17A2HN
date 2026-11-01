@@ -50,7 +50,30 @@
                     {
                         <tr>
                             <td class="text-center fw-bold">#@item.MaHoSo</td>
-                            <td class="fw-bold">@item.ViTriTuyenDung?.TenViTri</td>
+                            <td class="fw-bold">
+                                <div>@item.ViTriTuyenDung?.TenViTri</div>
+                                @{
+                                    string? cvFileName = null;
+                                    string[] extensions = { ".pdf", ".docx", ".doc" };
+                                    foreach (var ext in extensions)
+                                    {
+                                        var checkPath = System.IO.Path.Combine("wwwroot", "uploads", "cv", $"CV_HoSo_{item.MaHoSo}{ext}");
+                                        if (System.IO.File.Exists(checkPath))
+                                        {
+                                            cvFileName = $"CV_HoSo_{item.MaHoSo}{ext}";
+                                            break;
+                                        }
+                                    }
+                                }
+                                @if (cvFileName != null)
+                                {
+                                    <div class="mt-1">
+                                        <a href="~/uploads/cv/@cvFileName" target="_blank" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 11px;">
+                                            <i class="bi bi-file-earmark-pdf"></i> Xem CV đính kèm
+                                        </a>
+                                    </div>
+                                }
+                            </td>
                             <td>@item.ViTriTuyenDung?.PhongBan?.TenPhongBan</td>
                             <td class="text-center">@item.NgayNop.ToString("dd/MM/yyyy HH:mm")</td>
                             <td class="text-center">
