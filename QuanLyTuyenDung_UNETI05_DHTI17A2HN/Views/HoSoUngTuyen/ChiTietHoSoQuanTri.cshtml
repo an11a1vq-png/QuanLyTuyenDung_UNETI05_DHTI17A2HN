@@ -223,6 +223,75 @@
         </div>
     </div>
 
+    @* KHỐI: ĐƠN ỨNG TUYỂN & TỆP ĐÍNH KÈM CV
+       Hiển thị thư giới thiệu, ghi chú và file CV đính kèm của ứng viên. *@
+    @{
+        string? cvAdminFileName = null;
+        string[] adminExts = { ".pdf", ".docx", ".doc" };
+        foreach (var ext in adminExts)
+        {
+            var checkAdminPath = System.IO.Path.Combine("wwwroot", "uploads", "cv", $"CV_HoSo_{Model.MaHoSo}{ext}");
+            if (System.IO.File.Exists(checkAdminPath))
+            {
+                cvAdminFileName = $"CV_HoSo_{Model.MaHoSo}{ext}";
+                break;
+            }
+        }
+    }
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-file-earmark-person me-2 text-primary"></i>Đơn ứng tuyển & File CV đính kèm</h5>
+            @if (cvAdminFileName != null)
+            {
+                <a href="~/uploads/cv/@cvAdminFileName" target="_blank" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Mở file CV toàn màn hình
+                </a>
+            }
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="text-muted small fw-bold">Thư giới thiệu / Đơn ứng tuyển:</div>
+                    <div class="border rounded p-3 bg-light" style="white-space: pre-line;">
+                        @(string.IsNullOrWhiteSpace(Model.ThuGioiThieu) ? "Ứng viên không nhập thư giới thiệu." : Model.ThuGioiThieu)
+                    </div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.GhiChu))
+                {
+                    <div class="col-12">
+                        <div class="text-muted small fw-bold">Ghi chú ứng viên (Link portfolio/CV online):</div>
+                        <div class="border rounded p-3 bg-light">
+                            @Model.GhiChu
+                        </div>
+                    </div>
+                }
+                <div class="col-12">
+                    <div class="text-muted small fw-bold mb-2">Tệp CV đính kèm:</div>
+                    @if (cvAdminFileName != null)
+                    {
+                        @if (cvAdminFileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <div class="border rounded p-1 bg-light">
+                                <iframe src="~/uploads/cv/@cvAdminFileName" width="100%" height="550px" style="border: none; border-radius: 6px;"></iframe>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info d-flex align-items-center justify-content-between mb-0">
+                                <div><i class="bi bi-file-earmark-word text-primary fs-4 me-2"></i> File Word đính kèm: <strong>@cvAdminFileName</strong></div>
+                                <a href="~/uploads/cv/@cvAdminFileName" target="_blank" class="btn btn-primary btn-sm"><i class="bi bi-download me-1"></i> Tải về xem</a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted small fst-italic">Ứng viên không đính kèm file CV.</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
     @* KHỐI 5: THÔNG TIN VỊ TRÍ TUYỂN DỤNG
        Hiển thị vị trí, phòng ban, chỉ tiêu và yêu cầu tuyển dụng. *@
     <div class="card border-0 shadow-sm mb-4">
