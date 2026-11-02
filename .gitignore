@@ -11,3 +11,9 @@
 App_Data/
 *.Publish.xml
 *.pubxml
+## Local SQL Server data and backups
+app-data/
+*.mdf
+*.ldf
+*.bak
+artifacts/

@@ -29,20 +29,9 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data
         public DbSet<LichPhongVan> LichPhongVan { get; set; } = null!;
         public DbSet<KetQuaTuyenDung> KetQuaTuyenDung { get; set; } = null!;
 
-        public DbSet<LichSuViTri> LichSuViTri { get; set; } = null!;
-        public DbSet<ViecLamYeuThich> ViecLamYeuThich { get; set; } = null!;
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<ViecLamYeuThich>().HasKey(x => new { x.MaTaiKhoan, x.MaViTri });
-            modelBuilder.Entity<ViecLamYeuThich>().HasOne(x => x.TaiKhoan).WithMany()
-                .HasForeignKey(x => x.MaTaiKhoan).OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<ViecLamYeuThich>().HasOne(x => x.ViTri).WithMany()
-                .HasForeignKey(x => x.MaViTri).OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<LichSuViTri>().HasOne(x => x.ViTri).WithMany()
-                .HasForeignKey(x => x.MaViTri).OnDelete(DeleteBehavior.SetNull);
-            modelBuilder.Entity<LichSuViTri>().HasIndex(x => new { x.MaViTri, x.ThoiGian });
 
             // 1. Seed 5 PhongBan
             modelBuilder.Entity<PhongBan>().HasData(

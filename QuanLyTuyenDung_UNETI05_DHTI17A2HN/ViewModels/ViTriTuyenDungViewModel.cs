@@ -365,8 +365,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         // Sắp xếp
         [Display(Name = "Sắp xếp")]
         public string? SapXep { get; set; }
-        public bool ChiYeuThich { get; set; }
-        public HashSet<int> MaViTriYeuThich { get; set; } = new();
 
         public static readonly IReadOnlyDictionary<string, string> CacKieuSapXep = new Dictionary<string, string>
         {
@@ -501,8 +499,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
 
         // Ứng viên đang đăng nhập đã có hồ sơ còn hiệu lực cho vị trí này chưa
         public bool DaUngTuyen { get; set; }
-        public bool DaYeuThich { get; set; }
-        public IReadOnlyList<LichSuViTri> LichSu { get; set; } = Array.Empty<LichSuViTri>();
 
         // Hiển thị nút "Ứng tuyển" khi vị trí còn nhận hồ sơ và ứng viên chưa nộp
         public bool HienNutUngTuyen => CoTheUngTuyen && !DaUngTuyen;

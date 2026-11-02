@@ -8,6 +8,4 @@ public class MoLaiViTriViewModel
     public DateTime HanNopMoi { get; set; } = DateTime.Today.AddDays(30);
     [Range(1,1000), Display(Name = "Chỉ tiêu tuyển dụng")]
     public int SoLuongCanTuyen { get; set; }
-    [Required(ErrorMessage = "Vui lòng nhập lý do"), StringLength(500), Display(Name = "Lý do gia hạn / mở lại")]
-    public string LyDo { get; set; } = "";
 }
