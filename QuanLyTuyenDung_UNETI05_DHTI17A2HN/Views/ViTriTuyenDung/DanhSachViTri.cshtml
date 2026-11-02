@@ -184,6 +184,7 @@
                                 </div>
                             </td>
                             <td class="text-center">
+                                @if (!string.IsNullOrWhiteSpace(item.LyDoDong)) { <div class="small text-muted mb-1">@item.LyDoDong</div> }
                                 <div class="dropdown">
                                     <button class="badge border-0 dropdown-toggle @item.BadgeTrangThai" type="button"
                                             data-bs-toggle="dropdown" aria-expanded="false" title="Đổi trạng thái">
@@ -205,6 +206,7 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
                                     <a asp-action="ChiTietViTri" asp-route-id="@item.MaViTri" class="btn btn-outline-info" title="Chi tiết"><i class="bi bi-eye"></i></a>
+                                    <a asp-action="MoLaiViTri" asp-route-id="@item.MaViTri" class="btn btn-outline-success" title="Gia hạn / mở lại"><i class="bi bi-calendar-plus"></i></a>
                                     <a asp-action="CapNhatViTri" asp-route-id="@item.MaViTri" class="btn btn-outline-warning" title="Cập nhật"><i class="bi bi-pencil"></i></a>
                                     @if (laAdmin)
                                     {

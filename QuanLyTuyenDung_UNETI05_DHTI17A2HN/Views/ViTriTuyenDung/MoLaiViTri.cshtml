@@ -1,0 +1,15 @@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.MoLaiViTriViewModel
+@{ ViewData["Title"] = "Gia hạn / mở lại tuyển dụng"; }
+<div class="container my-4" style="max-width: 760px;">
+    <h3>Gia hạn / mở lại tuyển dụng</h3>
+    <p class="text-muted">@Model.TenViTri</p>
+    <div class="alert alert-info">Hạn nộp phải còn hiệu lực, chỉ tiêu phải lớn hơn số đã tuyển và phòng ban phải đang hoạt động.</div>
+    <form asp-action="MoLaiViTri" asp-route-id="@Model.MaViTri" method="post" class="card card-body shadow-sm">
+        <input asp-for="MaViTri" type="hidden" />
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="mb-3"><label asp-for="HanNopMoi" class="form-label"></label><input asp-for="HanNopMoi" class="form-control" /><span asp-validation-for="HanNopMoi" class="text-danger"></span></div>
+        <div class="mb-3"><label asp-for="SoLuongCanTuyen" class="form-label"></label><input asp-for="SoLuongCanTuyen" class="form-control" /><span asp-validation-for="SoLuongCanTuyen" class="text-danger"></span></div>
+        <div class="d-flex gap-2"><button class="btn btn-primary" type="submit">Lưu và mở tuyển</button><a asp-action="ChiTietViTri" asp-route-id="@Model.MaViTri" class="btn btn-outline-secondary">Quay lại</a></div>
+    </form>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

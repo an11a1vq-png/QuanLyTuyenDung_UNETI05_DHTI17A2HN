@@ -42,12 +42,9 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Helpers
 
         public static int? GetMaTaiKhoan(this ISession session)
         {
-            var val = session.GetInt32(SessionKeyMaTaiKhoan);
-            if (val.HasValue) return val;
-
             var str = session.GetString(SessionKeyMaTaiKhoan);
             if (int.TryParse(str, out int res)) return res;
-            return null;
+            return session.GetInt32(SessionKeyMaTaiKhoan);
         }
 
         public static string? GetHoTen(this ISession session)
@@ -62,12 +59,9 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Helpers
 
         public static int? GetMaUngVien(this ISession session)
         {
-            var val = session.GetInt32(SessionKeyMaUngVien);
-            if (val.HasValue) return val;
-
             var str = session.GetString(SessionKeyMaUngVien);
             if (int.TryParse(str, out int res)) return res;
-            return null;
+            return session.GetInt32(SessionKeyMaUngVien);
         }
     }
 }

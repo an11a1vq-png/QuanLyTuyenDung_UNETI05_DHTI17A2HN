@@ -35,8 +35,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             string? sapXep,
             int page = 1)
         {
-            await CapNhatTrangThaiTuDongAsync();
-
             // Kiểm tra quyền: chỉ Admin hoặc Nhân sự mới xem được
             var vaiTro = HttpContext.Session.GetVaiTro();
             if (vaiTro != "Admin" && vaiTro != "Nhân sự")
@@ -45,6 +43,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
+            await CapNhatTrangThaiTuDongAsync();
             var model = new DanhSachViTriViewModel
             {
                 SearchString = searchString,
@@ -214,10 +213,12 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             foreach (var viTri in viTriCanDong)
             {
+                var duChiTieu = await _context.HoSoUngTuyen.CountAsync(h => h.MaViTri == viTri.MaViTri && h.TrangThai == TrangThaiTuyenDung.TrungTuyen) >= viTri.SoLuongCanTuyen;
+                viTri.LyDoDong = duChiTieu ? "Đã tuyển đủ chỉ tiêu" : "Đã hết hạn nộp hồ sơ";
                 viTri.TrangThai = TrangThaiTuyenDung.DaDong;
             }
 
-            await _context.SaveChangesAsync();
+            await LuuThayDoiAsync();
         }
 
         // =========================================================================
@@ -258,6 +259,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             var phongBan = await _context.PhongBan.FindAsync(model.MaPhongBan);
             model.KiemTraPhongBan(phongBan, ModelState);
 
+            if (model.TrangThai == TrangThaiTuyenDung.DangTuyen)
+            {
+                if (model.HanNopHoSo.Date < DateTime.Today)
+                    ModelState.AddModelError(nameof(model.HanNopHoSo), "Không thể mở tuyển khi đã hết hạn.");
+                if (model.LaCapNhat && model.SoDaTrungTuyen >= model.SoLuongCanTuyen)
+                    ModelState.AddModelError(nameof(model.SoLuongCanTuyen), "Đã đủ chỉ tiêu. Hãy tăng chỉ tiêu trước khi mở tuyển.");
+            }
             if (!ModelState.IsValid)
             {
                 model.NapDanhMucCoDinh();
@@ -269,7 +277,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             model.GanVaoEntity(viTri);
 
             _context.ViTriTuyenDung.Add(viTri);
-            await _context.SaveChangesAsync();
+            await LuuThayDoiAsync();
 
             TempData["SuccessMessage"] = $"Đã thêm vị trí '{viTri.TenViTri}' thành công.";
             return RedirectToAction(nameof(DanhSachViTri));
@@ -342,6 +350,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             var phongBan = await _context.PhongBan.FindAsync(model.MaPhongBan);
             model.KiemTraPhongBan(phongBan, ModelState);
 
+            if (model.TrangThai == TrangThaiTuyenDung.DangTuyen)
+            {
+                if (model.HanNopHoSo.Date < DateTime.Today)
+                    ModelState.AddModelError(nameof(model.HanNopHoSo), "Không thể mở tuyển khi đã hết hạn.");
+                if (soDaTrungTuyen >= model.SoLuongCanTuyen)
+                    ModelState.AddModelError(nameof(model.SoLuongCanTuyen), "Đã đủ chỉ tiêu. Hãy tăng chỉ tiêu trước khi mở tuyển.");
+            }
             if (!ModelState.IsValid)
             {
                 model.NapDanhMucCoDinh();
@@ -353,7 +368,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                await LuuThayDoiAsync();
                 TempData["SuccessMessage"] = $"Đã cập nhật vị trí '{viTri.TenViTri}' thành công.";
                 return RedirectToAction(nameof(ChiTietViTri), new { id });
             }
@@ -398,7 +413,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             _context.ViTriTuyenDung.Remove(viTri);
-            await _context.SaveChangesAsync();
+            await LuuThayDoiAsync();
 
             TempData["SuccessMessage"] = $"Đã xóa vị trí '{viTri.TenViTri}' thành công.";
             return RedirectToAction(nameof(DanhSachViTri));
@@ -409,29 +424,111 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         // =========================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DoiTrangThai(int id, string trangThaiMoi)
+        public async Task<IActionResult> DoiTrangThai(int id, string trangThaiMoi, string? lyDo)
         {
             var vaiTro = HttpContext.Session.GetVaiTro();
             if (vaiTro != "Admin" && vaiTro != "Nhân sự")
             {
-                return Json(new { success = false, message = "Bạn không có quyền thực hiện thao tác này." });
+                return KetQuaDoiTrangThai(false, "Bạn không có quyền thực hiện thao tác này.");
             }
 
             var viTri = await _context.ViTriTuyenDung.FindAsync(id);
             if (viTri == null)
             {
-                return Json(new { success = false, message = "Vị trí không tồn tại." });
+                return KetQuaDoiTrangThai(false, "Vị trí không tồn tại.");
             }
 
             if (!ViTriTuyenDung.DanhSachTrangThai.Contains(trangThaiMoi))
             {
-                return Json(new { success = false, message = "Trạng thái không hợp lệ." });
+                return KetQuaDoiTrangThai(false, "Trạng thái không hợp lệ.");
             }
 
+            if (trangThaiMoi == TrangThaiTuyenDung.DangTuyen)
+            {
+                var loi = await KiemTraMoTuyenAsync(viTri, viTri.HanNopHoSo, viTri.SoLuongCanTuyen);
+                if (loi != null) return KetQuaDoiTrangThai(false, loi);
+            }
+            if (lyDo?.Length > 500) return KetQuaDoiTrangThai(false, "Lý do tối đa 500 ký tự.");
+            viTri.LyDoDong = trangThaiMoi == TrangThaiTuyenDung.DaDong
+                ? (string.IsNullOrWhiteSpace(lyDo) ? "Đóng thủ công" : lyDo.Trim()) : null;
             viTri.TrangThai = trangThaiMoi;
-            await _context.SaveChangesAsync();
+            await LuuThayDoiAsync();
 
-            return Json(new { success = true, message = $"Đã đổi trạng thái thành '{trangThaiMoi}'." });
+            return KetQuaDoiTrangThai(true, $"Đã đổi trạng thái thành '{trangThaiMoi}'.");
+        }
+
+        // =========================================================================
+        // GIA HẠN / MỞ LẠI TUYỂN DỤNG VÀ CÁC HÀM HỖ TRỢ
+        // =========================================================================
+        private bool LaQuanLy => HttpContext.Session.GetVaiTro() is "Admin" or "Nhân sự";
+
+        private async Task<string?> KiemTraMoTuyenAsync(ViTriTuyenDung v, DateTime han, int chiTieu)
+        {
+            if (han.Date < DateTime.Today || han.Date < v.NgayBatDauNhanHoSo.Date)
+                return "Hạn nộp phải từ hôm nay và không trước ngày bắt đầu nhận hồ sơ.";
+            if (v.NgayBatDauNhanHoSo.Date > DateTime.Today)
+                return "Chưa đến ngày nhận hồ sơ. Hãy cập nhật ngày bắt đầu trước khi mở lại.";
+            if (!await _context.PhongBan.AnyAsync(p => p.MaPhongBan == v.MaPhongBan && p.TrangThai))
+                return "Phòng ban đang ngưng hoạt động, không thể mở tuyển.";
+            var daTuyen = await _context.HoSoUngTuyen.CountAsync(h => h.MaViTri == v.MaViTri && h.TrangThai == TrangThaiTuyenDung.TrungTuyen);
+            if (chiTieu <= daTuyen) return $"Đã tuyển {daTuyen} người. Chỉ tiêu mới phải lớn hơn số đã tuyển.";
+            return null;
+        }
+
+        private IActionResult KetQuaDoiTrangThai(bool thanhCong, string thongBao)
+        {
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = thanhCong, message = thongBao });
+            TempData[thanhCong ? "SuccessMessage" : "ErrorMessage"] = thongBao;
+            return RedirectToAction(nameof(DanhSachViTri));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MoLaiViTri(int id)
+        {
+            if (!LaQuanLy) return StatusCode(403);
+            var v = await _context.ViTriTuyenDung.FindAsync(id);
+            if (v == null) return NotFound();
+            return View(new MoLaiViTriViewModel { MaViTri = id, TenViTri = v.TenViTri,
+                HanNopMoi = v.HanNopHoSo.Date > DateTime.Today ? v.HanNopHoSo : DateTime.Today.AddDays(30),
+                SoLuongCanTuyen = v.SoLuongCanTuyen });
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> MoLaiViTri(int id, MoLaiViTriViewModel model)
+        {
+            if (!LaQuanLy) return StatusCode(403);
+            if (id != model.MaViTri) return BadRequest();
+            // Serialize quota validation with writes to applications for this position.
+            await using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var v = await _context.ViTriTuyenDung.FindAsync(id);
+            if (v == null) return NotFound();
+            model.TenViTri = v.TenViTri;
+            var loi = await KiemTraMoTuyenAsync(v, model.HanNopMoi, model.SoLuongCanTuyen);
+            if (loi != null) ModelState.AddModelError("", loi);
+            if (!ModelState.IsValid) return View(model);
+            v.HanNopHoSo = model.HanNopMoi.Date;
+            v.SoLuongCanTuyen = model.SoLuongCanTuyen;
+            v.TrangThai = TrangThaiTuyenDung.DangTuyen;
+            v.LyDoDong = null;
+            await LuuThayDoiAsync();
+            await transaction.CommitAsync();
+            TempData["SuccessMessage"] = "Đã gia hạn và mở tuyển thành công.";
+            return RedirectToAction(nameof(ChiTietViTri), new { id });
+        }
+
+        private async Task LuuThayDoiAsync()
+        {
+            var entries = _context.ChangeTracker.Entries<ViTriTuyenDung>()
+                .Where(e => e.State is EntityState.Added or EntityState.Modified).ToList();
+            foreach (var entry in entries)
+            {
+                var v = entry.Entity;
+                v.LyDoDong = v.TrangThai == TrangThaiTuyenDung.DaDong
+                    ? (string.IsNullOrWhiteSpace(v.LyDoDong) ? "Đóng thủ công" : v.LyDoDong)
+                    : null;
+            }
+            await _context.SaveChangesAsync();
         }
     }
 }
