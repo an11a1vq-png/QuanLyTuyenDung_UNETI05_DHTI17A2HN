@@ -1,0 +1,66 @@
+@*
+    Họ và tên: Đỗ Thiện An
+    Mã sinh viên: 23103100082
+    Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
+    Nội dung: Màn hình Quên mật khẩu - Bước 1: Nhập Email hoặc Tên đăng nhập (/TaiKhoan/QuenMatKhau)
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.QuenMatKhauViewModel
+
+@{
+    ViewData["Title"] = "Quên mật khẩu";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white text-center py-4 rounded-top-4">
+                    <h4 class="mb-1 fw-bold"><i class="bi bi-patch-question me-2"></i>QUÊN MẬT KHẨU</h4>
+                    <p class="mb-0 small text-white-50">Nhập thông tin để nhận mã xác thực OTP 6 số</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <p class="text-muted small mb-4">
+                        <i class="bi bi-info-circle text-primary me-1"></i>
+                        Vui lòng nhập <strong>Địa chỉ Email</strong> hoặc <strong>Tên đăng nhập</strong> đã đăng ký. Hệ thống sẽ tạo mã OTP xác thực bảo mật gồm 6 chữ số có hiệu lực trong 15 phút.
+                    </p>
+
+                    <form asp-action="QuenMatKhau" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-4">
+                            <label asp-for="EmailHoacTenDangNhap" class="form-label fw-semibold">
+                                <i class="bi bi-envelope-at me-1"></i>Email hoặc Tên đăng nhập
+                            </label>
+                            <input asp-for="EmailHoacTenDangNhap" class="form-control form-control-lg" placeholder="Ví dụ: ungvien1@gmail.com hoặc ungvien1" autofocus />
+                            <span asp-validation-for="EmailHoacTenDangNhap" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                                <i class="bi bi-send-check me-2"></i>Gửi mã xác thực OTP
+                            </button>
+                            <a asp-action="DangNhap" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Quay lại Đăng nhập
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

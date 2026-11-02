@@ -1,0 +1,99 @@
+@*
+    Họ và tên: Đỗ Thiện An
+    Mã sinh viên: 23103100082
+    Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
+    Nội dung: Màn hình Đặt lại mật khẩu - Bước 2: Nhập OTP và Mật khẩu mới (/TaiKhoan/DatLaiMatKhau)
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.DatLaiMatKhauViewModel
+
+@{
+    ViewData["Title"] = "Đặt lại mật khẩu";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-success text-white text-center py-4 rounded-top-4">
+                    <h4 class="mb-1 fw-bold"><i class="bi bi-shield-check me-2"></i>XÁC THỰC & ĐẶT LẠI MẬT KHẨU</h4>
+                    <p class="mb-0 small text-white-50">Nhập mã OTP 6 số và thiết lập mật khẩu mới</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["OtpDemo"] != null)
+                    {
+                        <div class="alert alert-info border-2 border-primary alert-dismissible fade show shadow-sm" role="alert">
+                            <div class="fw-bold text-primary mb-1">
+                                <i class="bi bi-lightning-charge-fill me-1"></i>Mã OTP kiểm thử nhanh (Demo môi trường Local):
+                            </div>
+                            <div class="fs-4 fw-bold font-monospace text-center py-2 bg-white rounded border border-primary text-primary">
+                                @TempData["OtpDemo"]
+                            </div>
+                            <small class="text-muted d-block text-center mt-1">Mã có hiệu lực trong 15 phút</small>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <form asp-action="DatLaiMatKhau" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-semibold">
+                                <i class="bi bi-envelope me-1"></i>Email tài khoản
+                            </label>
+                            <input asp-for="Email" class="form-control form-control-lg bg-light" readonly />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MaOtp" class="form-label fw-semibold">
+                                <i class="bi bi-123 me-1"></i>Mã xác thực OTP (6 chữ số)
+                            </label>
+                            <input asp-for="MaOtp" class="form-control form-control-lg text-center fw-bold fs-4 font-monospace" placeholder="123456" maxlength="6" autofocus />
+                            <span asp-validation-for="MaOtp" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MatKhauMoi" class="form-label fw-semibold">
+                                <i class="bi bi-shield-lock me-1"></i>Mật khẩu mới
+                            </label>
+                            <input asp-for="MatKhauMoi" type="password" class="form-control form-control-lg" placeholder="Tối thiểu 3 ký tự..." />
+                            <span asp-validation-for="MatKhauMoi" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="XacNhanMatKhauMoi" class="form-label fw-semibold">
+                                <i class="bi bi-check-circle me-1"></i>Xác nhận mật khẩu mới
+                            </label>
+                            <input asp-for="XacNhanMatKhauMoi" type="password" class="form-control form-control-lg" placeholder="Nhập lại mật khẩu mới..." />
+                            <span asp-validation-for="XacNhanMatKhauMoi" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg fw-semibold shadow-sm">
+                                <i class="bi bi-arrow-repeat me-2"></i>Xác nhận đổi mật khẩu
+                            </button>
+                            <a asp-action="QuenMatKhau" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Yêu cầu gửi lại mã OTP
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

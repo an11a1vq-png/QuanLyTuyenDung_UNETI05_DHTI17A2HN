@@ -17,7 +17,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.14")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -1138,15 +1138,28 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<DateTime?>("KhoaDenThoiDiem")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MaXacThucKhoiPhuc")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("MatKhau")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("SoLanDangNhapSai")
+                        .HasColumnType("int");
+
                     b.Property<string>("TenDangNhap")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ThoiHanMaXacThuc")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("TrangThai")
                         .HasColumnType("bit");
@@ -1167,6 +1180,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "admin@uneti.edu.vn",
                             HoTen = "Quản trị viên Hệ thống",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "admin",
                             TrangThai = true,
                             VaiTro = "Admin"
@@ -1177,6 +1191,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "admin2@uneti.edu.vn",
                             HoTen = "Quản trị viên Dự phòng",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "admin2",
                             TrangThai = true,
                             VaiTro = "Admin"
@@ -1187,6 +1202,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ha.hr@uneti.edu.vn",
                             HoTen = "Nguyễn Thị Thu Hà",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "hr1",
                             TrangThai = true,
                             VaiTro = "Nhân sự"
@@ -1197,6 +1213,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "minh.hr@uneti.edu.vn",
                             HoTen = "Trần Văn Minh",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "hr2",
                             TrangThai = true,
                             VaiTro = "Nhân sự"
@@ -1207,6 +1224,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "chi.hr@uneti.edu.vn",
                             HoTen = "Lê Mai Chi",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "hr3",
                             TrangThai = true,
                             VaiTro = "Nhân sự"
@@ -1217,6 +1235,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien1@gmail.com",
                             HoTen = "Nguyễn Văn An",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien1",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1227,6 +1246,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien2@gmail.com",
                             HoTen = "Trần Thị Bích",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien2",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1237,6 +1257,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien3@gmail.com",
                             HoTen = "Lê Hoàng Nam",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien3",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1247,6 +1268,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien4@gmail.com",
                             HoTen = "Phạm Quốc Cường",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien4",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1257,6 +1279,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien5@gmail.com",
                             HoTen = "Vũ Thị Duyên",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien5",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1267,6 +1290,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien6@gmail.com",
                             HoTen = "Hoàng Văn Giang",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien6",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1277,6 +1301,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien7@gmail.com",
                             HoTen = "Đặng Thùy Linh",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien7",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1287,6 +1312,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien8@gmail.com",
                             HoTen = "Bùi Văn Hùng",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien8",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1297,6 +1323,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien9@gmail.com",
                             HoTen = "Đỗ Mai Hương",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien9",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1307,6 +1334,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien10@gmail.com",
                             HoTen = "Ngô Quang Khải",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien10",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1317,6 +1345,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien11@gmail.com",
                             HoTen = "Dương Thị Lan",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien11",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1327,6 +1356,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien12@gmail.com",
                             HoTen = "Lý Thành Long",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien12",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1337,6 +1367,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien13@gmail.com",
                             HoTen = "Chu Minh Ngọc",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien13",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1347,6 +1378,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien14@gmail.com",
                             HoTen = "Hà Thị Phương",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien14",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1357,6 +1389,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien15@gmail.com",
                             HoTen = "Phan Văn Quân",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien15",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1367,6 +1400,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien16@gmail.com",
                             HoTen = "Tạ Thị Quỳnh",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien16",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1377,6 +1411,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien17@gmail.com",
                             HoTen = "Võ Hoài Sơn",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien17",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1387,6 +1422,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien18@gmail.com",
                             HoTen = "Trịnh Thị Thanh",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien18",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1397,6 +1433,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien19@gmail.com",
                             HoTen = "Lương Tuấn Tú",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien19",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1407,6 +1444,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien20@gmail.com",
                             HoTen = "Cao Thị Uyên",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien20",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1417,6 +1455,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien21@gmail.com",
                             HoTen = "Mai Văn Vũ",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien21",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1427,6 +1466,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien22@gmail.com",
                             HoTen = "Đinh Thị Xuân",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien22",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1437,6 +1477,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien23@gmail.com",
                             HoTen = "Đoàn Hữu Yên",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien23",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1447,6 +1488,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien24@gmail.com",
                             HoTen = "Trương Gia Bảo",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien24",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1457,6 +1499,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien25@gmail.com",
                             HoTen = "Vương Thảo Chi",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien25",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1467,6 +1510,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien26@gmail.com",
                             HoTen = "Tô Đình Đạt",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien26",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1477,6 +1521,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien27@gmail.com",
                             HoTen = "Lâm Khánh Huyền",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien27",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1487,6 +1532,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien28@gmail.com",
                             HoTen = "Nghiêm Đức Khoa",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien28",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1497,6 +1543,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien29@gmail.com",
                             HoTen = "Quách Mỹ Loan",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien29",
                             TrangThai = true,
                             VaiTro = "Ứng viên"
@@ -1507,6 +1554,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                             Email = "ungvien30@gmail.com",
                             HoTen = "Bạch Tiến Dũng",
                             MatKhau = "123",
+                            SoLanDangNhapSai = 0,
                             TenDangNhap = "ungvien30",
                             TrangThai = true,
                             VaiTro = "Ứng viên"

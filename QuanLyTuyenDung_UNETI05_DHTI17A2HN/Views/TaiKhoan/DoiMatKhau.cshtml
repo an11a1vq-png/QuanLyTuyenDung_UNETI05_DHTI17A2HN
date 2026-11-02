@@ -1,0 +1,77 @@
+@*
+    Họ và tên: Đỗ Thiện An
+    Mã sinh viên: 23103100082
+    Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
+    Nội dung: Màn hình Đổi mật khẩu người dùng (/TaiKhoan/DoiMatKhau)
+*@
+@model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.DoiMatKhauViewModel
+
+@{
+    ViewData["Title"] = "Đổi mật khẩu";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white text-center py-4 rounded-top-4">
+                    <h4 class="mb-1 fw-bold"><i class="bi bi-key-fill me-2"></i>ĐỔI MẬT KHẨU</h4>
+                    <p class="mb-0 small text-white-50">Cập nhật mật khẩu mới có mã hóa băm bảo mật BCrypt</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <form asp-action="DoiMatKhau" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="MatKhauHienTai" class="form-label fw-semibold">
+                                <i class="bi bi-lock me-1"></i>Mật khẩu hiện tại
+                            </label>
+                            <input asp-for="MatKhauHienTai" type="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu đang dùng..." autofocus />
+                            <span asp-validation-for="MatKhauHienTai" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MatKhauMoi" class="form-label fw-semibold">
+                                <i class="bi bi-shield-lock me-1"></i>Mật khẩu mới
+                            </label>
+                            <input asp-for="MatKhauMoi" type="password" class="form-control form-control-lg" placeholder="Tối thiểu 3 ký tự..." />
+                            <span asp-validation-for="MatKhauMoi" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="XacNhanMatKhauMoi" class="form-label fw-semibold">
+                                <i class="bi bi-check-circle me-1"></i>Xác nhận mật khẩu mới
+                            </label>
+                            <input asp-for="XacNhanMatKhauMoi" type="password" class="form-control form-control-lg" placeholder="Nhập lại mật khẩu mới..." />
+                            <span asp-validation-for="XacNhanMatKhauMoi" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                                <i class="bi bi-check2-circle me-2"></i>Lưu mật khẩu mới
+                            </button>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Quay lại trang chủ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
