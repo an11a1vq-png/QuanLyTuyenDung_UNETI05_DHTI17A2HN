@@ -14,10 +14,12 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
     public class HoSoUngTuyenController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public HoSoUngTuyenController(ApplicationDbContext context)
+        public HoSoUngTuyenController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Mở form nộp hồ sơ ứng tuyển
@@ -83,7 +85,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         // POST: Xử lý lưu hồ sơ nộp
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> NopHoSo(HoSoUngTuyen model)
+        public async Task<IActionResult> NopHoSo(HoSoUngTuyen model, IFormFile? fileCV)
         {
             var maTaiKhoanStr = HttpContext.Session.GetString("MaTaiKhoan");
             if (string.IsNullOrEmpty(maTaiKhoanStr) || !int.TryParse(maTaiKhoanStr, out int maTaiKhoan))
@@ -105,6 +107,26 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             _context.HoSoUngTuyen.Add(model);
             await _context.SaveChangesAsync();
+
+            // Xử lý lưu file CV nếu ứng viên có đính kèm (Tính năng nâng cao)
+            if (fileCV != null && fileCV.Length > 0)
+            {
+                var ext = Path.GetExtension(fileCV.FileName).ToLowerInvariant();
+                var allowedExts = new[] { ".pdf", ".doc", ".docx" };
+                if (allowedExts.Contains(ext) && fileCV.Length <= 5 * 1024 * 1024)
+                {
+                    var uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "cv");
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir);
+                    }
+                    var filePath = Path.Combine(uploadDir, $"CV_HoSo_{model.MaHoSo}{ext}");
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await fileCV.CopyToAsync(stream);
+                    }
+                }
+            }
 
             TempData["SuccessMessage"] = "Nộp hồ sơ ứng tuyển thành công!";
             return RedirectToAction(nameof(HoSoCuaToi));
