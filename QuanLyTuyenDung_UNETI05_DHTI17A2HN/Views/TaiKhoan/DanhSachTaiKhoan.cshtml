@@ -2,7 +2,7 @@
     Họ và tên: Đỗ Thiện An
     Mã sinh viên: 23103100082
     Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
-    Nội dung: Màn hình Quản trị danh sách tài khoản người dùng (/TaiKhoan/DanhSachTaiKhoan)
+    Nội dung: Màn hình Quản trị danh sách tài khoản người dùng, hiển thị trạng thái Brute-force (/TaiKhoan/DanhSachTaiKhoan)
 *@
 @model IEnumerable<QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.TaiKhoan>
 @using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Helpers
@@ -18,7 +18,7 @@
             <h3 class="fw-bold text-primary mb-1">
                 <i class="bi bi-people-fill me-2"></i>Quản lý tài khoản hệ thống
             </h3>
-            <p class="text-muted small mb-0">Quản trị viên quản lý danh sách, tìm kiếm, lọc và phân quyền tài khoản</p>
+            <p class="text-muted small mb-0">Quản trị viên quản lý danh sách, tìm kiếm, lọc phân quyền và giám sát bảo mật tài khoản</p>
         </div>
     </div>
 
@@ -96,8 +96,8 @@
                             <th class="py-3">Họ và tên</th>
                             <th class="py-3">Email</th>
                             <th class="py-3 text-center">Vai trò</th>
-                            <th class="py-3 text-center">Trạng thái</th>
-                            <th class="py-3 text-end pe-4" style="width: 140px;">Thao tác</th>
+                            <th class="py-3 text-center">Trạng thái & Bảo mật</th>
+                            <th class="py-3 text-end pe-4" style="width: 220px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,6 +114,9 @@
                         {
                             foreach (var item in Model)
                             {
+                                bool isTempLocked = item.KhoaDenThoiDiem.HasValue && item.KhoaDenThoiDiem.Value > DateTime.Now;
+                                double remainingMinutes = isTempLocked ? Math.Ceiling((item.KhoaDenThoiDiem!.Value - DateTime.Now).TotalMinutes) : 0;
+
                                 <tr>
                                     <td class="ps-3 fw-bold text-muted">#@item.MaTaiKhoan</td>
                                     <td>
@@ -142,43 +145,68 @@
                                         }
                                     </td>
                                     <td class="text-center">
-                                        @if (item.TrangThai)
+                                        @if (!item.TrangThai)
                                         {
-                                            <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
-                                                <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                            <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">
+                                                <i class="bi bi-lock me-1"></i>Khóa vĩnh viễn
+                                            </span>
+                                        }
+                                        else if (isTempLocked)
+                                        {
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-2 py-1" title="Khóa tự động do nhập sai mật khẩu 5 lần">
+                                                <i class="bi bi-shield-exclamation me-1"></i>Tạm khóa (@(remainingMinutes)p)
                                             </span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">
-                                                <i class="bi bi-lock me-1"></i>Bị khóa
+                                            <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
+                                                <i class="bi bi-check-circle me-1"></i>Hoạt động
                                             </span>
+                                            @if (item.SoLanDangNhapSai > 0)
+                                            {
+                                                <span class="badge bg-secondary-subtle text-secondary border small ms-1" title="Số lần nhập sai mật khẩu gần nhất">
+                                                    Sai: @item.SoLanDangNhapSai/5
+                                                </span>
+                                            }
                                         }
                                     </td>
                                     <td class="text-end pe-4">
                                         @if (item.MaTaiKhoan != currentAdminId)
                                         {
-                                            <form asp-action="KhoaTaiKhoan" method="post" class="d-inline"
-                                                  onsubmit="return confirm('Bạn có chắc chắn muốn @(item.TrangThai ? "khóa" : "mở khóa") tài khoản @item.TenDangNhap?');">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@item.MaTaiKhoan" />
-                                                @if (item.TrangThai)
+                                            <div class="d-inline-flex gap-1">
+                                                @if (isTempLocked)
                                                 {
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Khóa tài khoản">
-                                                        <i class="bi bi-lock-fill me-1"></i>Khóa
-                                                    </button>
+                                                    <form asp-action="MoKhoaTamThoi" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@item.MaTaiKhoan" />
+                                                        <button type="submit" class="btn btn-sm btn-warning text-dark" title="Mở khóa Brute-force ngay">
+                                                            <i class="bi bi-unlock me-1"></i>Mở tạm khóa
+                                                        </button>
+                                                    </form>
                                                 }
-                                                else
-                                                {
-                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Mở khóa tài khoản">
-                                                        <i class="bi bi-unlock-fill me-1"></i>Mở khóa
-                                                    </button>
-                                                }
-                                            </form>
+
+                                                <form asp-action="KhoaTaiKhoan" method="post" class="d-inline"
+                                                      onsubmit="return confirm('Bạn có chắc chắn muốn @(item.TrangThai ? "khóa" : "mở khóa") tài khoản @item.TenDangNhap?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.MaTaiKhoan" />
+                                                    @if (item.TrangThai)
+                                                    {
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Khóa tài khoản vĩnh viễn">
+                                                            <i class="bi bi-lock-fill me-1"></i>Khóa
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Mở khóa tài khoản">
+                                                            <i class="bi bi-unlock-fill me-1"></i>Mở khóa
+                                                        </button>
+                                                    }
+                                                </form>
+                                            </div>
                                         }
                                         else
                                         {
-                                            <span class="text-muted small italic">Chính bạn</span>
+                                            <span class="text-muted small fst-italic">Chính bạn</span>
                                         }
                                     </td>
                                 </tr>

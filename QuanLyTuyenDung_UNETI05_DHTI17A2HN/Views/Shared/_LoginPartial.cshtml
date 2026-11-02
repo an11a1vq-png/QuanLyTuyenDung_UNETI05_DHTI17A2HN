@@ -2,7 +2,7 @@
     Họ và tên: Đỗ Thiện An
     Mã sinh viên: 23103100082
     Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
-    Nội dung: Partial view hiển thị trạng thái đăng nhập, thông tin người dùng và phân quyền Session (_LoginPartial.cshtml)
+    Nội dung: Partial view hiển thị trạng thái đăng nhập, thông tin người dùng, đổi mật khẩu và phân quyền Session (_LoginPartial.cshtml)
 *@
 @using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Helpers
 
@@ -58,6 +58,13 @@
                 </li>
                 <li><hr class="dropdown-divider"></li>
             }
+
+            <li>
+                <a class="dropdown-item text-dark" asp-controller="TaiKhoan" asp-action="DoiMatKhau">
+                    <i class="bi bi-key me-2 text-primary"></i>Đổi mật khẩu
+                </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
              
             <li>
                 <a class="dropdown-item text-danger fw-semibold" asp-controller="TaiKhoan" asp-action="DangXuat">
