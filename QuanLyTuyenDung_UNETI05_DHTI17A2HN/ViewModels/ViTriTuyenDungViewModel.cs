@@ -95,6 +95,8 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         [BindNever]
         public int SoDaTrungTuyen { get; set; }
 
+        public string? LyDoDong { get; set; }
+
         public bool LaCapNhat => MaViTri > 0;
 
         // Dữ liệu cho các dropdown: không bind từ form, không validate
@@ -188,6 +190,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             HanNopHoSo = v.HanNopHoSo,
             MoTaCongViec = v.MoTaCongViec,
             YeuCauUngVien = v.YeuCauUngVien,
+            LyDoDong = v.LyDoDong,
             TrangThai = v.TrangThai,
             SoDaTrungTuyen = soDaTrungTuyen
         };
@@ -246,6 +249,8 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         public int SoDaTrungTuyen { get; set; }
 
         // --- THUỘC TÍNH TÍNH TOÁN ---
+        public string? LyDoDong { get; set; }
+
         public bool ConHan => DateTime.Today >= NgayBatDauNhanHoSo.Date && DateTime.Today <= HanNopHoSo.Date;
 
         public bool DaDuChiTieu => SoDaTrungTuyen >= SoLuongCanTuyen;
@@ -288,6 +293,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             SoLuongCanTuyen = v.SoLuongCanTuyen,
             NgayBatDauNhanHoSo = v.NgayBatDauNhanHoSo,
             HanNopHoSo = v.HanNopHoSo,
+            LyDoDong = v.LyDoDong,
             TrangThai = v.TrangThai,
             SoHoSoDaNop = v.HoSoUngTuyens.Count(),
             SoDaTrungTuyen = v.HoSoUngTuyens.Count(h => h.TrangThai == TrangThaiTuyenDung.TrungTuyen)
@@ -359,6 +365,8 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         // Sắp xếp
         [Display(Name = "Sắp xếp")]
         public string? SapXep { get; set; }
+        public bool ChiYeuThich { get; set; }
+        public HashSet<int> MaViTriYeuThich { get; set; } = new();
 
         public static readonly IReadOnlyDictionary<string, string> CacKieuSapXep = new Dictionary<string, string>
         {
@@ -493,6 +501,8 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
 
         // Ứng viên đang đăng nhập đã có hồ sơ còn hiệu lực cho vị trí này chưa
         public bool DaUngTuyen { get; set; }
+        public bool DaYeuThich { get; set; }
+        public IReadOnlyList<LichSuViTri> LichSu { get; set; } = Array.Empty<LichSuViTri>();
 
         // Hiển thị nút "Ứng tuyển" khi vị trí còn nhận hồ sơ và ứng viên chưa nộp
         public bool HienNutUngTuyen => CoTheUngTuyen && !DaUngTuyen;
@@ -531,6 +541,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             SoLuongCanTuyen = v.SoLuongCanTuyen,
             NgayBatDauNhanHoSo = v.NgayBatDauNhanHoSo,
             HanNopHoSo = v.HanNopHoSo,
+            LyDoDong = v.LyDoDong,
             TrangThai = v.TrangThai,
             SoHoSoDaNop = v.HoSoUngTuyens.Count(),
             SoDaTrungTuyen = v.HoSoUngTuyens.Count(h => h.TrangThai == TrangThaiTuyenDung.TrungTuyen),

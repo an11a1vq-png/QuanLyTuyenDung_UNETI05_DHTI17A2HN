@@ -5,15 +5,17 @@
     Nội dung: Trang việc làm cho ứng viên: xem các vị trí đang tuyển, tìm kiếm, lọc và ứng tuyển
 *@
 @model QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels.DanhSachViTriViewModel
+@using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Helpers
 
 @{
-    ViewData["Title"] = "Việc làm đang tuyển";
+    ViewData["Title"] = Model.ChiYeuThich ? "Việc làm yêu thích" : "Việc làm đang tuyển";
 }
 
 <div class="container mt-4 mb-5">
     <div class="text-center mb-4">
-        <h2 class="fw-bold text-primary">Cơ hội việc làm</h2>
-        <p class="text-muted mb-0">Hiện có <strong>@Model.TongSoBanGhi</strong> vị trí đang nhận hồ sơ</p>
+        <h2 class="fw-bold text-primary">@(Model.ChiYeuThich ? "Việc làm yêu thích" : "Cơ hội việc làm")</h2>
+        <p class="text-muted mb-0">Hiện có <strong>@Model.TongSoBanGhi</strong> @(Model.ChiYeuThich ? "vị trí đã lưu" : "vị trí đang nhận hồ sơ")</p>
+        @if (Context.Session.GetVaiTro() == "Ứng viên") { <a asp-action="ViecLam" asp-route-chiYeuThich="@(!Model.ChiYeuThich)" class="btn btn-outline-danger mt-2">@(Model.ChiYeuThich ? "Xem tất cả việc làm" : "Việc làm đã lưu")</a> }
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -27,6 +29,7 @@
 
     @* ---------- BỘ LỌC ---------- *@
     <form asp-action="ViecLam" method="get" class="card card-body shadow-sm mb-4">
+        <input type="hidden" name="chiYeuThich" value="@Model.ChiYeuThich.ToString().ToLowerInvariant()" />
         <div class="row g-2 align-items-end">
             <div class="col-md-4">
                 <label asp-for="SearchString" class="form-label small mb-1"></label>
@@ -56,7 +59,7 @@
         </div>
         @if (Model.DangLoc)
         {
-            <div class="mt-2 small"><a asp-action="ViecLam">Xóa bộ lọc</a></div>
+            <div class="mt-2 small"><a asp-action="ViecLam" asp-route-chiYeuThich="@Model.ChiYeuThich">Xóa bộ lọc</a></div>
         }
     </form>
 
@@ -64,7 +67,7 @@
     @if (!Model.Items.Any())
     {
         <div class="alert alert-warning text-center">
-            @(Model.DangLoc ? "Không tìm thấy vị trí phù hợp. Hãy thử từ khóa khác." : "Hiện chưa có vị trí nào đang tuyển. Vui lòng quay lại sau.")
+            @(Model.DangLoc ? "Không tìm thấy vị trí phù hợp. Hãy thử từ khóa khác." : (Model.ChiYeuThich ? "Bạn chưa lưu việc làm nào." : "Hiện chưa có vị trí nào đang tuyển. Vui lòng quay lại sau."))
         </div>
     }
     else
@@ -92,6 +95,16 @@
                                 <li><i class="bi bi-people"></i> Cần tuyển: @item.SoLuongConLai người</li>
                             </ul>
 
+                            @if (Model.ChiYeuThich) { <div class="small mb-2">@item.TrangThai @if (!string.IsNullOrWhiteSpace(item.LyDoDong)) { <span>· @item.LyDoDong</span> }</div> }
+                            @if (Context.Session.GetVaiTro() == "Ứng viên")
+                            {
+                                var daLuu = Model.MaViTriYeuThich.Contains(item.MaViTri);
+                                <form asp-action="LuuYeuThich" asp-route-id="@item.MaViTri" method="post" class="mb-3 position-relative" style="z-index: 2;">
+                                    <input type="hidden" name="luu" value="@((!daLuu).ToString().ToLowerInvariant())" />
+                                    <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-heart"></i> @(daLuu ? "Bỏ lưu" : "Lưu việc")</button>
+                                </form>
+                            }
                             <div class="mt-auto d-flex justify-content-between align-items-center small">
                                 <span class="text-muted"><i class="bi bi-calendar-event"></i> Hạn nộp: @item.HanNopHoSo.ToString("dd/MM/yyyy")</span>
                                 <span class="text-primary fw-semibold">Xem chi tiết &rarr;</span>

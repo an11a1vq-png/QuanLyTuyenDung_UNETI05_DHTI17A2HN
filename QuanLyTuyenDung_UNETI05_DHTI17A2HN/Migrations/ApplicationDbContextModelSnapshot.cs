@@ -1050,6 +1050,49 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                         });
                 });
 
+            modelBuilder.Entity("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.LichSuViTri", b =>
+                {
+                    b.Property<int>("MaLichSu")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLichSu"));
+
+                    b.Property<string>("HanhDong")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("MaTaiKhoan")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaViTri")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NguoiThucHien")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NoiDung")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TenViTri")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("ThoiGian")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("MaLichSu");
+
+                    b.HasIndex("MaViTri", "ThoiGian");
+
+                    b.ToTable("LichSuViTri");
+                });
+
             modelBuilder.Entity("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.PhongBan", b =>
                 {
                     b.Property<int>("MaPhongBan")
@@ -2068,6 +2111,10 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                     b.Property<DateTime>("HanNopHoSo")
                         .HasColumnType("date");
 
+                    b.Property<string>("LyDoDong")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("MaPhongBan")
                         .HasColumnType("int");
 
@@ -2321,6 +2368,24 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                         });
                 });
 
+            modelBuilder.Entity("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.ViecLamYeuThich", b =>
+                {
+                    b.Property<int>("MaTaiKhoan")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaViTri")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayLuu")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("MaTaiKhoan", "MaViTri");
+
+                    b.HasIndex("MaViTri");
+
+                    b.ToTable("ViecLamYeuThich");
+                });
+
             modelBuilder.Entity("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.HoSoUngTuyen", b =>
                 {
                     b.HasOne("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.UngVien", "UngVien")
@@ -2362,6 +2427,16 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                     b.Navigation("HoSoUngTuyen");
                 });
 
+            modelBuilder.Entity("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.LichSuViTri", b =>
+                {
+                    b.HasOne("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.ViTriTuyenDung", "ViTri")
+                        .WithMany()
+                        .HasForeignKey("MaViTri")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ViTri");
+                });
+
             modelBuilder.Entity("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.UngVien", b =>
                 {
                     b.HasOne("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.TaiKhoan", "TaiKhoan")
@@ -2382,6 +2457,25 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                         .IsRequired();
 
                     b.Navigation("PhongBan");
+                });
+
+            modelBuilder.Entity("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.ViecLamYeuThich", b =>
+                {
+                    b.HasOne("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.TaiKhoan", "TaiKhoan")
+                        .WithMany()
+                        .HasForeignKey("MaTaiKhoan")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.ViTriTuyenDung", "ViTri")
+                        .WithMany()
+                        .HasForeignKey("MaViTri")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TaiKhoan");
+
+                    b.Navigation("ViTri");
                 });
 
             modelBuilder.Entity("QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.HoSoUngTuyen", b =>

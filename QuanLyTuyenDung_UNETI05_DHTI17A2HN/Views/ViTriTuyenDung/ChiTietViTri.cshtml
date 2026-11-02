@@ -66,6 +66,8 @@
                         <span class="badge fs-6 @Model.BadgeTrangThai">@Model.TrangThai</span>
                     </div>
 
+                    @if (!string.IsNullOrWhiteSpace(Model.LyDoDong))
+                    { <div class="alert alert-secondary mt-3 mb-0">Lý do đóng: @Model.LyDoDong</div> }
                     <hr />
 
                     <div class="row text-center g-3">
@@ -114,12 +116,34 @@
             </div>
         </div>
 
+        @if (laQuanLy)
+        {
+            <div class="col-12 order-last"><div class="card card-body shadow-sm mt-3">
+                <h5>Lịch sử thay đổi</h5>
+                @if (!Model.LichSu.Any()) { <p class="text-muted mb-0">Chưa có thay đổi được ghi nhận từ khi bật chức năng này.</p> }
+                else
+                {
+                    <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Thời gian</th><th>Người thực hiện</th><th>Thao tác</th><th>Nội dung thay đổi</th></tr></thead><tbody>
+                    @foreach (var log in Model.LichSu)
+                    { <tr><td class="text-nowrap">@log.ThoiGian.ToString("dd/MM/yyyy HH:mm:ss")</td><td>@log.NguoiThucHien</td><td>@log.HanhDong</td><td style="white-space: pre-wrap; min-width: 250px;">@log.NoiDung</td></tr> }
+                    </tbody></table></div>
+                }
+            </div></div>
+        }
+
         @* ---------- CỘT PHẢI: HÀNH ĐỘNG / THỐNG KÊ ---------- *@
         <div class="col-lg-4">
             @if (laQuanLy)
             {
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body">
+                        <a asp-action="MoLaiViTri" asp-route-id="@Model.MaViTri" class="btn btn-outline-success w-100 mb-3">Gia hạn / mở lại tuyển dụng</a>
+                        <form asp-action="DoiTrangThai" asp-route-id="@Model.MaViTri" method="post" class="mb-3">
+                            <input type="hidden" name="trangThaiMoi" value="Đã đóng" />
+                            <label for="lyDoDong" class="form-label">Đóng vị trí kèm lý do</label>
+                            <input id="lyDoDong" name="lyDo" class="form-control mb-2" maxlength="500" required placeholder="Nhập lý do đóng" />
+                            <button class="btn btn-outline-secondary w-100" type="submit">Đóng vị trí</button>
+                        </form>
                         <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart"></i> Thống kê hồ sơ</h5>
 
                         <div class="d-flex justify-content-between mb-1">
@@ -162,6 +186,14 @@
             {
                 <div class="card shadow-sm border-0 mb-4 sticky-lg-top" style="top: 1rem;">
                     <div class="card-body">
+                        @if (vaiTro == "Ứng viên")
+                        {
+                            <form asp-action="LuuYeuThich" asp-route-id="@Model.MaViTri" method="post" class="mb-3">
+                                <input type="hidden" name="luu" value="@((!Model.DaYeuThich).ToString().ToLowerInvariant())" />
+                                <button class="btn btn-outline-danger w-100" type="submit"><i class="bi bi-heart"></i> @(Model.DaYeuThich ? "Bỏ lưu việc làm" : "Lưu việc yêu thích")</button>
+                            </form>
+                            <a asp-action="ViecLam" asp-route-chiYeuThich="true" class="d-block mb-3">Xem việc làm đã lưu</a>
+                        }
                         @if (Model.HienNutUngTuyen)
                         {
                             <p class="small text-muted mb-2">

@@ -14,7 +14,7 @@ using QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels;
 
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 {
-    public class ViTriTuyenDungController : Controller
+    public partial class ViTriTuyenDungController : Controller
     {
         private readonly ApplicationDbContext _context;
 
@@ -35,8 +35,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             string? sapXep,
             int page = 1)
         {
-            await CapNhatTrangThaiTuDongAsync();
-
             // Kiểm tra quyền: chỉ Admin hoặc Nhân sự mới xem được
             var vaiTro = HttpContext.Session.GetVaiTro();
             if (vaiTro != "Admin" && vaiTro != "Nhân sự")
@@ -45,6 +43,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
+            await CapNhatTrangThaiTuDongAsync();
             var model = new DanhSachViTriViewModel
             {
                 SearchString = searchString,
@@ -107,8 +106,11 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             int? maPhongBan,
             string? trinhDo,
             string? sapXep,
-            int page = 1)
+            int page = 1, bool chiYeuThich = false)
         {
+            var maTaiKhoan = HttpContext.Session.GetMaTaiKhoan();
+            if (chiYeuThich && (HttpContext.Session.GetVaiTro() != "Ứng viên" || !maTaiKhoan.HasValue))
+                return RedirectToAction("DangNhap", "TaiKhoan");
             await CapNhatTrangThaiTuDongAsync();
 
             var model = new DanhSachViTriViewModel
@@ -117,6 +119,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 MaPhongBan = maPhongBan,
                 TrinhDo = trinhDo,
                 SapXep = sapXep,
+                ChiYeuThich = chiYeuThich,
                 SoBanGhiMoiTrang = 12  // Hiển thị 12 thẻ mỗi trang
             };
 
@@ -125,7 +128,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 .AsQueryable();
 
             // Áp dụng bộ lọc (chỉ lấy vị trí đang tuyển, còn hạn)
-            query = model.ApDungBoLoc(query, chiLayDangTuyen: true);
+            if (chiYeuThich)
+                query = query.Where(v => _context.ViecLamYeuThich.Any(x => x.MaTaiKhoan == maTaiKhoan && x.MaViTri == v.MaViTri));
+            // Danh sách đã lưu vẫn giữ vị trí đã đóng để ứng viên có thể bỏ lưu.
+            query = model.ApDungBoLoc(query, chiLayDangTuyen: !chiYeuThich);
+            if (maTaiKhoan.HasValue && HttpContext.Session.GetVaiTro() == "Ứng viên")
+                model.MaViTriYeuThich = (await _context.ViecLamYeuThich
+                    .Where(x => x.MaTaiKhoan == maTaiKhoan.Value).Select(x => x.MaViTri).ToListAsync()).ToHashSet();
 
             model.TongSoBanGhi = await query.CountAsync();
             model.ChuanHoaTrang(page);
@@ -175,12 +184,18 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             var vaiTro = HttpContext.Session.GetVaiTro();
             if (vaiTro == "Admin" || vaiTro == "Nhân sự")
             {
+                model.LichSu = await _context.LichSuViTri.AsNoTracking().Where(x => x.MaViTri == id)
+                    .OrderByDescending(x => x.ThoiGian).ThenByDescending(x => x.MaLichSu).ToListAsync();
                 model.ThongKeTheoTrangThai = await _context.HoSoUngTuyen
                     .Where(h => h.MaViTri == id)
                     .GroupBy(h => h.TrangThai)
                     .Select(g => new { TrangThai = g.Key, SoLuong = g.Count() })
                     .ToDictionaryAsync(x => x.TrangThai, x => x.SoLuong);
             }
+
+            var accountId = HttpContext.Session.GetMaTaiKhoan();
+            if (accountId.HasValue && vaiTro == "Ứng viên")
+                model.DaYeuThich = await _context.ViecLamYeuThich.AnyAsync(x => x.MaTaiKhoan == accountId.Value && x.MaViTri == id);
 
             // Kiểm tra ứng viên đã nộp hồ sơ chưa
             var maUngVien = HttpContext.Session.GetMaUngVien();
@@ -214,10 +229,12 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             foreach (var viTri in viTriCanDong)
             {
+                var duChiTieu = await _context.HoSoUngTuyen.CountAsync(h => h.MaViTri == viTri.MaViTri && h.TrangThai == TrangThaiTuyenDung.TrungTuyen) >= viTri.SoLuongCanTuyen;
+                viTri.LyDoDong = duChiTieu ? "Đã tuyển đủ chỉ tiêu" : "Đã hết hạn nộp hồ sơ";
                 viTri.TrangThai = TrangThaiTuyenDung.DaDong;
             }
 
-            await _context.SaveChangesAsync();
+            await LuuThayDoiAsync("Tự động đóng", heThong: true);
         }
 
         // =========================================================================
@@ -258,6 +275,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             var phongBan = await _context.PhongBan.FindAsync(model.MaPhongBan);
             model.KiemTraPhongBan(phongBan, ModelState);
 
+            if (model.TrangThai == TrangThaiTuyenDung.DangTuyen)
+            {
+                if (model.HanNopHoSo.Date < DateTime.Today)
+                    ModelState.AddModelError(nameof(model.HanNopHoSo), "Không thể mở tuyển khi đã hết hạn.");
+                if (model.LaCapNhat && model.SoDaTrungTuyen >= model.SoLuongCanTuyen)
+                    ModelState.AddModelError(nameof(model.SoLuongCanTuyen), "Đã đủ chỉ tiêu. Hãy tăng chỉ tiêu trước khi mở tuyển.");
+            }
             if (!ModelState.IsValid)
             {
                 model.NapDanhMucCoDinh();
@@ -269,7 +293,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             model.GanVaoEntity(viTri);
 
             _context.ViTriTuyenDung.Add(viTri);
-            await _context.SaveChangesAsync();
+            await LuuThayDoiAsync();
 
             TempData["SuccessMessage"] = $"Đã thêm vị trí '{viTri.TenViTri}' thành công.";
             return RedirectToAction(nameof(DanhSachViTri));
@@ -342,6 +366,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             var phongBan = await _context.PhongBan.FindAsync(model.MaPhongBan);
             model.KiemTraPhongBan(phongBan, ModelState);
 
+            if (model.TrangThai == TrangThaiTuyenDung.DangTuyen)
+            {
+                if (model.HanNopHoSo.Date < DateTime.Today)
+                    ModelState.AddModelError(nameof(model.HanNopHoSo), "Không thể mở tuyển khi đã hết hạn.");
+                if (soDaTrungTuyen >= model.SoLuongCanTuyen)
+                    ModelState.AddModelError(nameof(model.SoLuongCanTuyen), "Đã đủ chỉ tiêu. Hãy tăng chỉ tiêu trước khi mở tuyển.");
+            }
             if (!ModelState.IsValid)
             {
                 model.NapDanhMucCoDinh();
@@ -353,7 +384,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                await LuuThayDoiAsync();
                 TempData["SuccessMessage"] = $"Đã cập nhật vị trí '{viTri.TenViTri}' thành công.";
                 return RedirectToAction(nameof(ChiTietViTri), new { id });
             }
@@ -398,7 +429,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             _context.ViTriTuyenDung.Remove(viTri);
-            await _context.SaveChangesAsync();
+            await LuuThayDoiAsync();
 
             TempData["SuccessMessage"] = $"Đã xóa vị trí '{viTri.TenViTri}' thành công.";
             return RedirectToAction(nameof(DanhSachViTri));
@@ -409,29 +440,37 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         // =========================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DoiTrangThai(int id, string trangThaiMoi)
+        public async Task<IActionResult> DoiTrangThai(int id, string trangThaiMoi, string? lyDo)
         {
             var vaiTro = HttpContext.Session.GetVaiTro();
             if (vaiTro != "Admin" && vaiTro != "Nhân sự")
             {
-                return Json(new { success = false, message = "Bạn không có quyền thực hiện thao tác này." });
+                return KetQuaDoiTrangThai(false, "Bạn không có quyền thực hiện thao tác này.");
             }
 
             var viTri = await _context.ViTriTuyenDung.FindAsync(id);
             if (viTri == null)
             {
-                return Json(new { success = false, message = "Vị trí không tồn tại." });
+                return KetQuaDoiTrangThai(false, "Vị trí không tồn tại.");
             }
 
             if (!ViTriTuyenDung.DanhSachTrangThai.Contains(trangThaiMoi))
             {
-                return Json(new { success = false, message = "Trạng thái không hợp lệ." });
+                return KetQuaDoiTrangThai(false, "Trạng thái không hợp lệ.");
             }
 
+            if (trangThaiMoi == TrangThaiTuyenDung.DangTuyen)
+            {
+                var loi = await KiemTraMoTuyenAsync(viTri, viTri.HanNopHoSo, viTri.SoLuongCanTuyen);
+                if (loi != null) return KetQuaDoiTrangThai(false, loi);
+            }
+            if (lyDo?.Length > 500) return KetQuaDoiTrangThai(false, "Lý do tối đa 500 ký tự.");
+            viTri.LyDoDong = trangThaiMoi == TrangThaiTuyenDung.DaDong
+                ? (string.IsNullOrWhiteSpace(lyDo) ? "Đóng thủ công" : lyDo.Trim()) : null;
             viTri.TrangThai = trangThaiMoi;
-            await _context.SaveChangesAsync();
+            await LuuThayDoiAsync();
 
-            return Json(new { success = true, message = $"Đã đổi trạng thái thành '{trangThaiMoi}'." });
+            return KetQuaDoiTrangThai(true, $"Đã đổi trạng thái thành '{trangThaiMoi}'.");
         }
     }
 }
