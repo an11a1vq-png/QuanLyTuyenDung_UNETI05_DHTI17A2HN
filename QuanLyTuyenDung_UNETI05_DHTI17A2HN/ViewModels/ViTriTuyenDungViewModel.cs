@@ -363,9 +363,12 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         public static readonly IReadOnlyDictionary<string, string> CacKieuSapXep = new Dictionary<string, string>
         {
             ["han_nop"] = "Hạn nộp gần nhất",
-            ["moi_nhat"] = "Mới đăng",
+            ["moi_nhat"] = "Ngày bắt đầu mới nhất",
             ["ten"] = "Tên vị trí (A-Z)",
-            ["so_luong"] = "Số lượng cần tuyển"
+            ["so_luong"] = "Số lượng cần tuyển",
+            ["nhieu_ho_so"] = "Nhiều hồ sơ nhất",
+            ["con_chi_tieu"] = "Còn nhiều chỉ tiêu nhất",
+            ["kinh_nghiem"] = "Kinh nghiệm thấp đến cao"
         };
 
         public IEnumerable<SelectListItem> DanhSachSapXep { get; set; } = Enumerable.Empty<SelectListItem>();
@@ -408,10 +411,20 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             return SapXep switch
             {
                 "moi_nhat" => query.OrderByDescending(v => v.NgayBatDauNhanHoSo).ThenByDescending(v => v.MaViTri),
-                "ten" => query.OrderBy(v => v.TenViTri),
-                "so_luong" => query.OrderByDescending(v => v.SoLuongCanTuyen).ThenBy(v => v.HanNopHoSo),
+                "ten" => query.OrderBy(v => v.TenViTri).ThenBy(v => v.MaViTri),
+                "so_luong" => query.OrderByDescending(v => v.SoLuongCanTuyen).ThenBy(v => v.HanNopHoSo).ThenBy(v => v.MaViTri),
+                "han_nop" => query.OrderBy(v => v.HanNopHoSo).ThenBy(v => v.MaViTri),
+                "nhieu_ho_so" => query.OrderByDescending(v => v.HoSoUngTuyens.Count())
+                                      .ThenBy(v => v.MaViTri),
+                "con_chi_tieu" => query.OrderByDescending(v =>
+                    v.HoSoUngTuyens.Count(h => h.TrangThai == TrangThaiTuyenDung.TrungTuyen) >= v.SoLuongCanTuyen
+                        ? 0
+                        : v.SoLuongCanTuyen - v.HoSoUngTuyens.Count(h => h.TrangThai == TrangThaiTuyenDung.TrungTuyen))
+                                      .ThenBy(v => v.HanNopHoSo).ThenBy(v => v.MaViTri),
+                "kinh_nghiem" => query.OrderBy(v => v.SoNamKinhNghiemToiThieu)
+                                      .ThenBy(v => v.MaViTri),
                 // Mặc định: vị trí đang tuyển lên trước, hạn nộp gần nhất trước
-                _ => query.OrderByDescending(v => v.TrangThai == TrangThaiTuyenDung.DangTuyen).ThenBy(v => v.HanNopHoSo)
+                _ => query.OrderByDescending(v => v.TrangThai == TrangThaiTuyenDung.DangTuyen).ThenBy(v => v.HanNopHoSo).ThenBy(v => v.MaViTri)
             };
         }
     }

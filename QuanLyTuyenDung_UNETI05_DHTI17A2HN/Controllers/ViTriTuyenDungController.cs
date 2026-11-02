@@ -35,6 +35,8 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             string? sapXep,
             int page = 1)
         {
+            await CapNhatTrangThaiTuDongAsync();
+
             // Kiểm tra quyền: chỉ Admin hoặc Nhân sự mới xem được
             var vaiTro = HttpContext.Session.GetVaiTro();
             if (vaiTro != "Admin" && vaiTro != "Nhân sự")
@@ -107,6 +109,8 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             string? sapXep,
             int page = 1)
         {
+            await CapNhatTrangThaiTuDongAsync();
+
             var model = new DanhSachViTriViewModel
             {
                 SearchString = searchString,
@@ -154,6 +158,8 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         [HttpGet]
         public async Task<IActionResult> ChiTietViTri(int id)
         {
+            await CapNhatTrangThaiTuDongAsync();
+
             var model = await _context.ViTriTuyenDung
                 .Where(v => v.MaViTri == id)
                 .Select(ChiTietViTriViewModel.Projection)
@@ -187,6 +193,31 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             return View(model);
+        }
+
+        // Tự động đóng vị trí đã hết hạn hoặc đã tuyển đủ chỉ tiêu.
+        // Chỉ xử lý vị trí đang tuyển để không ghi đè các trạng thái thủ công.
+        private async Task CapNhatTrangThaiTuDongAsync()
+        {
+            var homNay = DateTime.Today;
+
+            var viTriCanDong = await _context.ViTriTuyenDung
+                .Where(v => v.TrangThai == TrangThaiTuyenDung.DangTuyen)
+                .Where(v => v.HanNopHoSo < homNay ||
+                            v.HoSoUngTuyens.Count(h => h.TrangThai == TrangThaiTuyenDung.TrungTuyen) >= v.SoLuongCanTuyen)
+                .ToListAsync();
+
+            if (viTriCanDong.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var viTri in viTriCanDong)
+            {
+                viTri.TrangThai = TrangThaiTuyenDung.DaDong;
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         // =========================================================================
@@ -404,3 +435,4 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         }
     }
 }
+

@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
 
-
 #nullable disable
 
 namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
@@ -18,7 +17,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -671,7 +670,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("NhanXet")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MaKetQua");
@@ -774,16 +772,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLichPhongVan"));
 
                     b.Property<string>("DiaDiemHoacLienKet")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("GhiChu")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("HinhThucPhongVan")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 

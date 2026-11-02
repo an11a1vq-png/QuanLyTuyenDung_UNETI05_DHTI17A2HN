@@ -109,7 +109,9 @@
             </div>
             <div class="col-md-2">
                 <label asp-for="SapXep" class="form-label small mb-1"></label>
-                <select asp-for="SapXep" asp-items="Model.DanhSachSapXep" class="form-select"></select>
+                <select asp-for="SapXep" asp-items="Model.DanhSachSapXep" class="form-select">
+                    <option value="">Mặc định</option>
+                </select>
             </div>
             <div class="col-md-1 d-flex gap-1">
                 <button type="submit" class="btn btn-primary w-100" title="Lọc"><i class="bi bi-search"></i> Lọc</button>
