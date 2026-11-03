@@ -213,8 +213,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             foreach (var viTri in viTriCanDong)
             {
-                var duChiTieu = await _context.HoSoUngTuyen.CountAsync(h => h.MaViTri == viTri.MaViTri && h.TrangThai == TrangThaiTuyenDung.TrungTuyen) >= viTri.SoLuongCanTuyen;
-                viTri.LyDoDong = duChiTieu ? "Đã tuyển đủ chỉ tiêu" : "Đã hết hạn nộp hồ sơ";
                 viTri.TrangThai = TrangThaiTuyenDung.DaDong;
             }
 
@@ -424,7 +422,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         // =========================================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DoiTrangThai(int id, string trangThaiMoi, string? lyDo)
+        public async Task<IActionResult> DoiTrangThai(int id, string trangThaiMoi)
         {
             var vaiTro = HttpContext.Session.GetVaiTro();
             if (vaiTro != "Admin" && vaiTro != "Nhân sự")
@@ -448,9 +446,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 var loi = await KiemTraMoTuyenAsync(viTri, viTri.HanNopHoSo, viTri.SoLuongCanTuyen);
                 if (loi != null) return KetQuaDoiTrangThai(false, loi);
             }
-            if (lyDo?.Length > 500) return KetQuaDoiTrangThai(false, "Lý do tối đa 500 ký tự.");
-            viTri.LyDoDong = trangThaiMoi == TrangThaiTuyenDung.DaDong
-                ? (string.IsNullOrWhiteSpace(lyDo) ? "Đóng thủ công" : lyDo.Trim()) : null;
             viTri.TrangThai = trangThaiMoi;
             await LuuThayDoiAsync();
 
@@ -510,7 +505,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             v.HanNopHoSo = model.HanNopMoi.Date;
             v.SoLuongCanTuyen = model.SoLuongCanTuyen;
             v.TrangThai = TrangThaiTuyenDung.DangTuyen;
-            v.LyDoDong = null;
             await LuuThayDoiAsync();
             await transaction.CommitAsync();
             TempData["SuccessMessage"] = "Đã gia hạn và mở tuyển thành công.";
@@ -519,15 +513,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
         private async Task LuuThayDoiAsync()
         {
-            var entries = _context.ChangeTracker.Entries<ViTriTuyenDung>()
-                .Where(e => e.State is EntityState.Added or EntityState.Modified).ToList();
-            foreach (var entry in entries)
-            {
-                var v = entry.Entity;
-                v.LyDoDong = v.TrangThai == TrangThaiTuyenDung.DaDong
-                    ? (string.IsNullOrWhiteSpace(v.LyDoDong) ? "Đóng thủ công" : v.LyDoDong)
-                    : null;
-            }
             await _context.SaveChangesAsync();
         }
     }

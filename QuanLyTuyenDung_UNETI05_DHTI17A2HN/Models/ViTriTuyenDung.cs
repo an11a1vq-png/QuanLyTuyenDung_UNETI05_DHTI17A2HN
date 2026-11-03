@@ -57,9 +57,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models
         [Display(Name = "Trạng thái")]
         public string TrangThai { get; set; } = "Đang tuyển";
 
-        [StringLength(500)]
-        public string? LyDoDong { get; set; }
-
         [ForeignKey("MaPhongBan")]
         [Display(Name = "Phòng ban")]
         public virtual PhongBan? PhongBan { get; set; }
