@@ -4,6 +4,9 @@ using QuanLyTuyenDung_UNETI05_DHTI17A2HN.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// Nạp cấu hình cục bộ (chứa mật khẩu email, được chặn bởi .gitignore)
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 builder.Services.AddControllersWithViews();
 
 // 1. Cấu hình DbContext kết nối tương đối qua App_Data (|DataDirectory|)

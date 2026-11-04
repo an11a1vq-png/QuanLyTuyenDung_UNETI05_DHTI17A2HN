@@ -15,11 +15,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IConfiguration _configuration;
 
-        public HoSoUngTuyenController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public HoSoUngTuyenController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, IConfiguration configuration)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _configuration = configuration;
         }
 
         // GET: Mở form nộp hồ sơ ứng tuyển
@@ -128,7 +130,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 }
             }
 
-            TempData["SuccessMessage"] = "Nộp hồ sơ ứng tuyển thành công!";
+            // Gửi email xác nhận nộp hồ sơ thành công (chạy nền để người dùng không phải chờ tải trang)
+            var viTri = await _context.ViTriTuyenDung.FindAsync(model.MaViTri);
+            var tenViTri = viTri?.TenViTri ?? "Vị trí tuyển dụng";
+            _ = Task.Run(() => EmailHelper.SendThongBaoNopHoSoAsync(
+                ungVien.Email, ungVien.HoTen, tenViTri, model.NgayNop, _configuration));
+
+            TempData["SuccessMessage"] = $"Nộp hồ sơ ứng tuyển thành công! Email xác nhận đã được gửi tới {ungVien.Email}.";
             return RedirectToAction(nameof(HoSoCuaToi));
         }
 
