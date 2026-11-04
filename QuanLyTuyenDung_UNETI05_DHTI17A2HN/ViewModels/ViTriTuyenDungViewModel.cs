@@ -95,7 +95,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         [BindNever]
         public int SoDaTrungTuyen { get; set; }
 
-        public string? LyDoDong { get; set; }
 
         public bool LaCapNhat => MaViTri > 0;
 
@@ -190,7 +189,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             HanNopHoSo = v.HanNopHoSo,
             MoTaCongViec = v.MoTaCongViec,
             YeuCauUngVien = v.YeuCauUngVien,
-            LyDoDong = v.LyDoDong,
             TrangThai = v.TrangThai,
             SoDaTrungTuyen = soDaTrungTuyen
         };
@@ -249,7 +247,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
         public int SoDaTrungTuyen { get; set; }
 
         // --- THUỘC TÍNH TÍNH TOÁN ---
-        public string? LyDoDong { get; set; }
 
         public bool ConHan => DateTime.Today >= NgayBatDauNhanHoSo.Date && DateTime.Today <= HanNopHoSo.Date;
 
@@ -293,7 +290,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             SoLuongCanTuyen = v.SoLuongCanTuyen,
             NgayBatDauNhanHoSo = v.NgayBatDauNhanHoSo,
             HanNopHoSo = v.HanNopHoSo,
-            LyDoDong = v.LyDoDong,
             TrangThai = v.TrangThai,
             SoHoSoDaNop = v.HoSoUngTuyens.Count(),
             SoDaTrungTuyen = v.HoSoUngTuyens.Count(h => h.TrangThai == TrangThaiTuyenDung.TrungTuyen)
@@ -537,7 +533,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             SoLuongCanTuyen = v.SoLuongCanTuyen,
             NgayBatDauNhanHoSo = v.NgayBatDauNhanHoSo,
             HanNopHoSo = v.HanNopHoSo,
-            LyDoDong = v.LyDoDong,
             TrangThai = v.TrangThai,
             SoHoSoDaNop = v.HoSoUngTuyens.Count(),
             SoDaTrungTuyen = v.HoSoUngTuyens.Count(h => h.TrangThai == TrangThaiTuyenDung.TrungTuyen),

@@ -66,8 +66,6 @@
                         <span class="badge fs-6 @Model.BadgeTrangThai">@Model.TrangThai</span>
                     </div>
 
-                    @if (!string.IsNullOrWhiteSpace(Model.LyDoDong))
-                    { <div class="alert alert-secondary mt-3 mb-0">Lý do đóng: @Model.LyDoDong</div> }
                     <hr />
 
                     <div class="row text-center g-3">
@@ -125,8 +123,6 @@
                         <a asp-action="MoLaiViTri" asp-route-id="@Model.MaViTri" class="btn btn-outline-success w-100 mb-3">Gia hạn / mở lại tuyển dụng</a>
                         <form asp-action="DoiTrangThai" asp-route-id="@Model.MaViTri" method="post" class="mb-3">
                             <input type="hidden" name="trangThaiMoi" value="Đã đóng" />
-                            <label for="lyDoDong" class="form-label">Đóng vị trí kèm lý do</label>
-                            <input id="lyDoDong" name="lyDo" class="form-control mb-2" maxlength="500" required placeholder="Nhập lý do đóng" />
                             <button class="btn btn-outline-secondary w-100" type="submit">Đóng vị trí</button>
                         </form>
                         <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart"></i> Thống kê hồ sơ</h5>

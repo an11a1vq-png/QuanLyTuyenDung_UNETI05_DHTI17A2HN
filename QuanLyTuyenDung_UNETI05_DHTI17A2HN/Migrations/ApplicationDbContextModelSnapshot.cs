@@ -2068,10 +2068,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Migrations
                     b.Property<DateTime>("HanNopHoSo")
                         .HasColumnType("date");
 
-                    b.Property<string>("LyDoDong")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<int>("MaPhongBan")
                         .HasColumnType("int");
 
