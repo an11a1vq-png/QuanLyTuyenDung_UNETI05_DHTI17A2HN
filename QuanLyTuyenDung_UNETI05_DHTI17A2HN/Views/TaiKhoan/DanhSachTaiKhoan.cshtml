@@ -1,4 +1,4 @@
-@*
+﻿@*
     Họ và tên: Đỗ Thiện An
     Mã sinh viên: 23103100082
     Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
@@ -114,8 +114,10 @@
                         {
                             foreach (var item in Model)
                             {
-                                bool isTempLocked = item.KhoaDenThoiDiem.HasValue && item.KhoaDenThoiDiem.Value > DateTime.Now;
-                                double remainingMinutes = isTempLocked ? Math.Ceiling((item.KhoaDenThoiDiem!.Value - DateTime.Now).TotalMinutes) : 0;
+                                var tempLockout = AccountSecurityMemoryService.GetLockoutUntil(item.TenDangNhap);
+                                bool isTempLocked = tempLockout.HasValue && tempLockout.Value > DateTime.Now;
+                                double remainingMinutes = isTempLocked ? Math.Ceiling((tempLockout!.Value - DateTime.Now).TotalMinutes) : 0;
+                                int failedCount = AccountSecurityMemoryService.GetFailedAttempts(item.TenDangNhap);
 
                                 <tr>
                                     <td class="ps-3 fw-bold text-muted">#@item.MaTaiKhoan</td>
@@ -162,10 +164,10 @@
                                             <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
                                                 <i class="bi bi-check-circle me-1"></i>Hoạt động
                                             </span>
-                                            @if (item.SoLanDangNhapSai > 0)
+                                            @if (failedCount > 0 && !isTempLocked)
                                             {
-                                                <span class="badge bg-secondary-subtle text-secondary border small ms-1" title="Số lần nhập sai mật khẩu gần nhất">
-                                                    Sai: @item.SoLanDangNhapSai/5
+                                                <span class="badge bg-secondary-subtle text-secondary border small ms-1" title="Số lần nhập sai mật khẩu lưu trên RAM máy chủ">
+                                                    Sai: @failedCount/5
                                                 </span>
                                             }
                                         }
