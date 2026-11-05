@@ -534,6 +534,20 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             await _context.SaveChangesAsync();
 
+            // Gửi email thông báo kết quả việc làm khi chuyển sang Trúng tuyển hoặc Không trúng tuyển
+            if (trangThaiMoi is "Trúng tuyển" or "Không trúng tuyển")
+            {
+                var ungVien = await _context.UngVien.FirstOrDefaultAsync(u => u.MaUngVien == hoSo.MaUngVien);
+                var emailUV = ungVien?.Email;
+                if (!string.IsNullOrWhiteSpace(emailUV))
+                {
+                    var tenUV = ungVien?.HoTen ?? "Ứng viên";
+                    var tenViTri = hoSo.ViTriTuyenDung?.TenViTri ?? "";
+                    _ = Task.Run(() => EmailHelper.SendThongBaoKetQuaPhongVanAsync(
+                        emailUV, tenUV, trangThaiMoi, tenViTri, _configuration));
+                }
+            }
+
             TempData["SuccessMessage"] =
                 "Cập nhật trạng thái hồ sơ thành công.";
 

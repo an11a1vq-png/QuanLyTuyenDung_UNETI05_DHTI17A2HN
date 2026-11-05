@@ -1,4 +1,4 @@
-@*
+﻿@*
     Họ và tên: Đỗ Thiện An
     Mã sinh viên: 23103100082
     Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
@@ -30,7 +30,7 @@
             <li><span class="dropdown-item-text small text-muted"><i class="bi bi-shield-check me-1"></i>Vai trò: @vaiTro</span></li>
             <li><hr class="dropdown-divider"></li>
             
-            @if (vaiTro == "Ứng viên")
+            @if (vaiTro == "Ứng viên" || vaiTro == "UngVien")
             {
                 <li>
                     <a class="dropdown-item" asp-controller="UngVien" asp-action="CapNhatHoSo">

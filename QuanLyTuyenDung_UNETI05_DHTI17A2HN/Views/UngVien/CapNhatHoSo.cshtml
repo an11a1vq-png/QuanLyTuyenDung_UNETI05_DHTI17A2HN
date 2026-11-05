@@ -1,4 +1,4 @@
-@*
+﻿@*
     Họ và tên: Nguyễn Tấn Dũng
     Mã sinh viên: 23103100070
     Module: 3 - Quản lý ứng viên và nộp hồ sơ ứng tuyển
@@ -75,7 +75,15 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label asp-for="TrinhDoHocVan" class="form-label fw-bold"></label>
-                        <input asp-for="TrinhDoHocVan" class="form-control" placeholder="Đại học, Cao đẳng..." />
+                        <select asp-for="TrinhDoHocVan" class="form-select">
+                            <option value="">-- Chọn trình độ học vấn --</option>
+                            <option value="Trung cấp">Trung cấp</option>
+                            <option value="Cao đẳng">Cao đẳng</option>
+                            <option value="Đại học">Đại học</option>
+                            <option value="Thạc sĩ">Thạc sĩ</option>
+                            <option value="Tiến sĩ">Tiến sĩ</option>
+                            <option value="Khác">Khác</option>
+                        </select>
                         <span asp-validation-for="TrinhDoHocVan" class="text-danger"></span>
                     </div>
 
