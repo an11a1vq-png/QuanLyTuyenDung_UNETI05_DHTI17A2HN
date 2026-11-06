@@ -15,11 +15,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IConfiguration _configuration;
 
-        public HoSoUngTuyenController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public HoSoUngTuyenController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, IConfiguration configuration)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _configuration = configuration;
         }
 
         // GET: Mở form nộp hồ sơ ứng tuyển
@@ -128,7 +130,13 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 }
             }
 
-            TempData["SuccessMessage"] = "Nộp hồ sơ ứng tuyển thành công!";
+            // Gửi email xác nhận nộp hồ sơ thành công (chạy nền để người dùng không phải chờ tải trang)
+            var viTri = await _context.ViTriTuyenDung.FindAsync(model.MaViTri);
+            var tenViTri = viTri?.TenViTri ?? "Vị trí tuyển dụng";
+            _ = Task.Run(() => EmailHelper.SendThongBaoNopHoSoAsync(
+                ungVien.Email, ungVien.HoTen, tenViTri, model.NgayNop, _configuration));
+
+            TempData["SuccessMessage"] = $"Nộp hồ sơ ứng tuyển thành công! Email xác nhận đã được gửi tới {ungVien.Email}.";
             return RedirectToAction(nameof(HoSoCuaToi));
         }
 
@@ -525,6 +533,20 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             hoSo.NgayXuLy = DateTime.Now;
 
             await _context.SaveChangesAsync();
+
+            // Gửi email thông báo kết quả việc làm khi chuyển sang Trúng tuyển hoặc Không trúng tuyển
+            if (trangThaiMoi is "Trúng tuyển" or "Không trúng tuyển")
+            {
+                var ungVien = await _context.UngVien.FirstOrDefaultAsync(u => u.MaUngVien == hoSo.MaUngVien);
+                var emailUV = ungVien?.Email;
+                if (!string.IsNullOrWhiteSpace(emailUV))
+                {
+                    var tenUV = ungVien?.HoTen ?? "Ứng viên";
+                    var tenViTri = hoSo.ViTriTuyenDung?.TenViTri ?? "";
+                    _ = Task.Run(() => EmailHelper.SendThongBaoKetQuaPhongVanAsync(
+                        emailUV, tenUV, trangThaiMoi, tenViTri, _configuration));
+                }
+            }
 
             TempData["SuccessMessage"] =
                 "Cập nhật trạng thái hồ sơ thành công.";

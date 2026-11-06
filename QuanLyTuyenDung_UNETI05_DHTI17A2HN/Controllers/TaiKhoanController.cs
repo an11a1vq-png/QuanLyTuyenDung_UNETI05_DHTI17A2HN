@@ -1,4 +1,4 @@
-// ==============================================================================
+﻿// ==============================================================================
 // Họ và tên: Đỗ Thiện An
 // Mã sinh viên: 23103100082
 // Module: 1 - Tài khoản, Đăng nhập, Phân quyền và Phòng ban
@@ -203,7 +203,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                     MatKhau = passwordHash,
                     HoTen = model.HoTen.Trim(),
                     Email = model.Email.Trim(),
-                    VaiTro = "UngVien",
+                    VaiTro = "Ứng viên",
                     TrangThai = true
                 };
 

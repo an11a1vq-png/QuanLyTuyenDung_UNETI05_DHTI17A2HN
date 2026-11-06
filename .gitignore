@@ -17,3 +17,6 @@ app-data/
 *.ldf
 *.bak
 artifacts/
+
+## File cau hinh cuc bo chua mat khau email (tranh lo mat khau len Git)
+QuanLyTuyenDung_UNETI05_DHTI17A2HN/appsettings.Local.json
