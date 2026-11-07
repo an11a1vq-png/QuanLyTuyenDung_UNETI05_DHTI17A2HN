@@ -20,17 +20,19 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
     public class LichPhongVanController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public LichPhongVanController(ApplicationDbContext context)
+        public LichPhongVanController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // ==============================================================================
         // 1. DANH SÁCH LỊCH PHỎNG VẤN (/LichPhongVan/Index)
         // ==============================================================================
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? trangThai, string? nguoiPhongVan, DateTime? tuNgay, DateTime? denNgay)
         {
             // Kiểm tra phân quyền: Chỉ Admin và Nhân sự mới được quản lý lịch phỏng vấn (Mục 5.4 đề tài)
             var vaiTro = HttpContext.Session.GetVaiTro();
@@ -39,13 +41,36 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 return RedirectToAction("AccessDenied", "TaiKhoan");
             }
 
-            var lichPhongVan = await _context.LichPhongVan
+            var query = _context.LichPhongVan
                 .Include(l => l.HoSoUngTuyen)
                     .ThenInclude(h => h.UngVien)
                 .Include(l => l.HoSoUngTuyen)
                     .ThenInclude(h => h.ViTriTuyenDung)
+                .AsQueryable();
+
+            // Lọc theo trạng thái lịch
+            if (!string.IsNullOrWhiteSpace(trangThai))
+                query = query.Where(l => l.TrangThai == trangThai);
+
+            // Lọc theo tên người phỏng vấn (tìm gần đúng)
+            if (!string.IsNullOrWhiteSpace(nguoiPhongVan))
+                query = query.Where(l => l.NguoiPhongVan.Contains(nguoiPhongVan));
+
+            // Lọc theo khoảng ngày phỏng vấn
+            if (tuNgay.HasValue)
+                query = query.Where(l => l.ThoiGianBatDau.Date >= tuNgay.Value.Date);
+            if (denNgay.HasValue)
+                query = query.Where(l => l.ThoiGianBatDau.Date <= denNgay.Value.Date);
+
+            var lichPhongVan = await query
                 .OrderByDescending(l => l.ThoiGianBatDau)
                 .ToListAsync();
+
+            // Truyền lại giá trị bộ lọc để View giữ nguyên trên form
+            ViewBag.TrangThaiFilter = trangThai;
+            ViewBag.NguoiPhongVanFilter = nguoiPhongVan;
+            ViewBag.TuNgayFilter = tuNgay?.ToString("yyyy-MM-dd");
+            ViewBag.DenNgayFilter = denNgay?.ToString("yyyy-MM-dd");
 
             return View(lichPhongVan);
         }
@@ -179,6 +204,23 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 _context.Update(hoSo);
 
                 await _context.SaveChangesAsync();
+
+                // Gửi email thông báo lịch phỏng vấn cho ứng viên
+                var emailUV = hoSo.UngVien?.Email;
+                if (!string.IsNullOrWhiteSpace(emailUV))
+                {
+                    _ = Task.Run(() => EmailHelper.SendThongBaoLichPhongVanAsync(
+                        emailUV,
+                        hoSo.UngVien?.HoTen ?? "Ứng viên",
+                        hoSo.ViTriTuyenDung?.TenViTri ?? "",
+                        lichPhongVan.ThoiGianBatDau,
+                        lichPhongVan.ThoiGianKetThuc,
+                        lichPhongVan.HinhThucPhongVan ?? "",
+                        lichPhongVan.DiaDiemHoacLienKet ?? "",
+                        lichPhongVan.NguoiPhongVan ?? "",
+                        _configuration));
+                }
+
                 TempData["SuccessMessage"] = "Lập lịch phỏng vấn thành công!";
                 return RedirectToAction(nameof(Index));
             }
@@ -205,6 +247,9 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             var lich = await _context.LichPhongVan
                 .Include(l => l.HoSoUngTuyen)
+                    .ThenInclude(h => h!.UngVien)
+                .Include(l => l.HoSoUngTuyen)
+                    .ThenInclude(h => h!.ViTriTuyenDung)
                 .FirstOrDefaultAsync(l => l.MaLichPhongVan == id);
 
             if (lich == null || lich.TrangThai == "Đã hủy")
@@ -215,8 +260,8 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             lich.TrangThai = "Đã hoàn thành";
 
-            // Cập nhật trạng thái hồ sơ sang Đã phỏng vấn (Mục 9.3)
-            if (lich.HoSoUngTuyen != null)
+            // Chỉ cập nhật trạng thái hồ sơ sang Đã phỏng vấn nếu đang ở bước Chờ phỏng vấn (tránh đè mất Trúng tuyển / Không trúng tuyển)
+            if (lich.HoSoUngTuyen != null && lich.HoSoUngTuyen.TrangThai == "Chờ phỏng vấn")
             {
                 lich.HoSoUngTuyen.TrangThai = "Đã phỏng vấn";
                 _context.Update(lich.HoSoUngTuyen);
@@ -244,6 +289,9 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
 
             var lich = await _context.LichPhongVan
                 .Include(l => l.HoSoUngTuyen)
+                    .ThenInclude(h => h!.UngVien)
+                .Include(l => l.HoSoUngTuyen)
+                    .ThenInclude(h => h!.ViTriTuyenDung)
                 .FirstOrDefaultAsync(l => l.MaLichPhongVan == id);
 
             if (lich == null || lich.TrangThai != "Đã lên lịch")
@@ -269,6 +317,17 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            // Gửi email thông báo hủy lịch cho ứng viên
+            var emailHuy = lich.HoSoUngTuyen?.UngVien?.Email;
+            if (!string.IsNullOrWhiteSpace(emailHuy))
+            {
+                var tenUVHuy = lich.HoSoUngTuyen?.UngVien?.HoTen ?? "Ứng viên";
+                var tenViTriHuy = lich.HoSoUngTuyen?.ViTriTuyenDung?.TenViTri ?? "";
+                _ = Task.Run(() => EmailHelper.SendThongBaoHuyLichPhongVanAsync(
+                    emailHuy, tenUVHuy, tenViTriHuy, lich.ThoiGianBatDau, _configuration));
+            }
+
             TempData["SuccessMessage"] = "Đã hủy lịch phỏng vấn thành công!";
             return RedirectToAction(nameof(Index));
         }

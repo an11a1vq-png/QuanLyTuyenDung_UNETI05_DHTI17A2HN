@@ -12,6 +12,11 @@
             <h2 class="text-primary fw-bold mb-1"><i class="bi bi-award me-2"></i>Kết Quả Đánh Giá Tuyển Dụng</h2>
             <p class="text-muted small mb-0">Bảng tổng hợp điểm số đánh giá chuyên môn và quyết định tuyển dụng của Hội đồng</p>
         </div>
+        <div>
+            <a asp-action="XuatExcel" asp-route-ketQua="@ViewBag.KetQuaFilter" asp-route-tenViTri="@ViewBag.TenViTriFilter" asp-route-tenUngVien="@ViewBag.TenUngVienFilter" class="btn btn-success shadow-sm">
+                <i class="bi bi-file-earmark-excel me-1"></i> Xuất file Excel
+            </a>
+        </div>
     </div>
 
     @if (TempData["Error"] != null)
@@ -28,6 +33,47 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body py-3">
+            <form method="get" asp-action="Index" class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold mb-1">Kết quả</label>
+                    <select name="ketQua" class="form-select form-select-sm">
+                        <option value="">-- Tất cả --</option>
+                        <option value="Trúng tuyển" selected="@(ViewBag.KetQuaFilter == "Trúng tuyển")">Trúng tuyển</option>
+                        <option value="Không trúng tuyển" selected="@(ViewBag.KetQuaFilter == "Không trúng tuyển")">Không trúng tuyển</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold mb-1">Tên ứng viên</label>
+                    <input type="text" name="tenUngVien" class="form-control form-control-sm"
+                           placeholder="Tìm theo tên..." value="@ViewBag.TenUngVienFilter" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold mb-1">Vị trí tuyển dụng</label>
+                    <input type="text" name="tenViTri" class="form-control form-control-sm"
+                           placeholder="Tìm theo vị trí..." value="@ViewBag.TenViTriFilter" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold mb-1">Từ ngày đánh giá</label>
+                    <input type="date" name="tuNgay" class="form-control form-control-sm" value="@ViewBag.TuNgayFilter" />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label small fw-semibold mb-1">Đến ngày</label>
+                    <input type="date" name="denNgay" class="form-control form-control-sm" value="@ViewBag.DenNgayFilter" />
+                </div>
+                <div class="col-md-1 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
