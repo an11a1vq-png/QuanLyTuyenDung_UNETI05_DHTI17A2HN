@@ -367,6 +367,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             ["han_nop"] = "Hạn nộp gần nhất",
             ["moi_nhat"] = "Ngày bắt đầu mới nhất",
             ["ten"] = "Tên vị trí (A-Z)",
+            ["ten_za"] = "Tên vị trí (Z-A)",
             ["so_luong"] = "Số lượng cần tuyển",
             ["nhieu_ho_so"] = "Nhiều hồ sơ nhất",
             ["con_chi_tieu"] = "Còn nhiều chỉ tiêu nhất",
@@ -414,6 +415,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.ViewModels
             {
                 "moi_nhat" => query.OrderByDescending(v => v.NgayBatDauNhanHoSo).ThenByDescending(v => v.MaViTri),
                 "ten" => query.OrderBy(v => v.TenViTri).ThenBy(v => v.MaViTri),
+                "ten_za" => query.OrderByDescending(v => v.TenViTri).ThenByDescending(v => v.MaViTri),
                 "so_luong" => query.OrderByDescending(v => v.SoLuongCanTuyen).ThenBy(v => v.HanNopHoSo).ThenBy(v => v.MaViTri),
                 "han_nop" => query.OrderBy(v => v.HanNopHoSo).ThenBy(v => v.MaViTri),
                 "nhieu_ho_so" => query.OrderByDescending(v => v.HoSoUngTuyens.Count())
