@@ -2,7 +2,7 @@
     Họ và tên: Nguyễn Tấn Dũng
     Mã sinh viên: 23103100070
     Module: 3 - Quản lý ứng viên và nộp hồ sơ ứng tuyển
-    Nội dung: Màn hình danh sách theo dõi các hồ sơ đã nộp và thao tác hủy hồ sơ
+    Nội dung: Màn hình danh sách theo dõi các hồ sơ đã nộp, chi tiết lịch phỏng vấn, kết quả tuyển dụng và thao tác hủy hồ sơ
 *@
 @model IEnumerable<QuanLyTuyenDung_UNETI05_DHTI17A2HN.Models.HoSoUngTuyen>
 
@@ -18,40 +18,52 @@
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     }
 
     @if (!Model.Any())
     {
-        <div class="alert alert-warning text-center">
-            Bạn chưa nộp hồ sơ ứng tuyển nào. <a asp-controller="Home" asp-action="Index" class="alert-link">Xem danh sách việc làm tại đây!</a>
+        <div class="alert alert-warning text-center py-4 shadow-sm">
+            <i class="bi bi-folder-x fs-1 d-block mb-2 text-warning"></i>
+            Bạn chưa nộp hồ sơ ứng tuyển nào. <a asp-controller="Home" asp-action="Index" class="alert-link fw-bold">Xem danh sách việc làm tại đây!</a>
         </div>
     }
     else
     {
         <div class="table-responsive shadow-sm rounded">
-            <table class="table table-bordered table-hover align-middle mb-0">
+            <table class="table table-bordered table-hover align-middle mb-0 bg-white">
                 <thead class="table-primary text-center">
                     <tr>
-                        <th style="width: 80px;">Mã HS</th>
-                        <th>Vị trí ứng tuyển</th>
-                        <th>Phòng ban</th>
-                        <th style="width: 150px;">Ngày nộp</th>
-                        <th style="width: 150px;">Trạng thái</th>
-                        <th style="width: 130px;">Thao tác</th>
+                        <th style="width: 70px;">Mã HS</th>
+                        <th>Vị trí & Phòng ban</th>
+                        <th style="width: 130px;">Ngày nộp</th>
+                        <th style="width: 250px;">Trạng thái & Tiến trình</th>
+                        <th style="width: 160px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
+                        var lichPV = item.LichPhongVans?
+                            .OrderByDescending(l => l.ThoiGianBatDau)
+                            .FirstOrDefault(l => l.TrangThai != "Đã hủy");
+                        var kq = item.KetQuaTuyenDung;
+
                         <tr>
-                            <td class="text-center fw-bold">#@item.MaHoSo</td>
-                            <td class="fw-bold">
-                                <div>@item.ViTriTuyenDung?.TenViTri</div>
+                            <td class="text-center fw-bold text-muted">#@item.MaHoSo</td>
+                            <td>
+                                <div class="fw-bold text-dark fs-6">@item.ViTriTuyenDung?.TenViTri</div>
+                                <div class="text-muted small"><i class="bi bi-building me-1"></i>@item.ViTriTuyenDung?.PhongBan?.TenPhongBan</div>
                                 @{
                                     string? cvFileName = null;
                                     string[] extensions = { ".pdf", ".docx", ".doc" };
@@ -74,44 +86,261 @@
                                     </div>
                                 }
                             </td>
-                            <td>@item.ViTriTuyenDung?.PhongBan?.TenPhongBan</td>
-                            <td class="text-center">@item.NgayNop.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td class="text-center">
-                                @if (item.TrangThai == "Chờ duyệt")
+                            <td class="text-center small">@item.NgayNop.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <!-- Huy hiệu trạng thái chính -->
+                                <div>
+                                    @if (item.TrangThai == "Chờ duyệt")
+                                    {
+                                        <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-hourglass-split me-1"></i>Chờ duyệt hồ sơ</span>
+                                    }
+                                    else if (item.TrangThai == "Đạt sơ tuyển")
+                                    {
+                                        <span class="badge bg-info text-white px-2 py-1"><i class="bi bi-check-circle me-1"></i>Đạt sơ tuyển</span>
+                                    }
+                                    else if (item.TrangThai == "Chờ phỏng vấn" || item.TrangThai == "Đã lên lịch PV")
+                                    {
+                                        <span class="badge bg-primary text-white px-2 py-1"><i class="bi bi-calendar-event me-1"></i>@item.TrangThai</span>
+                                    }
+                                    else if (item.TrangThai == "Đã phỏng vấn")
+                                    {
+                                        <span class="badge bg-secondary text-white px-2 py-1"><i class="bi bi-mic me-1"></i>Đã phỏng vấn</span>
+                                    }
+                                    else if (item.TrangThai == "Trúng tuyển")
+                                    {
+                                        <span class="badge bg-success px-2 py-1"><i class="bi bi-trophy-fill me-1"></i>Trúng tuyển</span>
+                                    }
+                                    else if (item.TrangThai == "Đã hủy")
+                                    {
+                                        <span class="badge bg-secondary px-2 py-1">Đã hủy</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger px-2 py-1">@item.TrangThai</span>
+                                    }
+                                </div>
+
+                                <!-- Tóm tắt nhanh thông tin Lịch phỏng vấn (nếu có) -->
+                                @if (lichPV != null)
                                 {
-                                    <span class="badge bg-warning text-dark px-2 py-1">Chờ duyệt</span>
+                                    <div class="mt-2 p-2 bg-light border rounded small">
+                                        <div class="fw-semibold text-primary d-flex align-items-center justify-content-between">
+                                            <span><i class="bi bi-calendar-check me-1"></i>Lịch phỏng vấn</span>
+                                            <span class="badge @(lichPV.TrangThai == "Hoàn thành" ? "bg-success" : "bg-info")" style="font-size: 10px;">@lichPV.TrangThai</span>
+                                        </div>
+                                        <div class="text-dark mt-1">
+                                            <i class="bi bi-clock me-1 text-secondary"></i>@lichPV.ThoiGianBatDau.ToString("HH:mm dd/MM/yyyy")
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(lichPV.DiaDiemHoacLienKet))
+                                        {
+                                            <div class="text-truncate mt-1 text-muted" title="@lichPV.DiaDiemHoacLienKet">
+                                                @if (lichPV.DiaDiemHoacLienKet.StartsWith("http://") || lichPV.DiaDiemHoacLienKet.StartsWith("https://"))
+                                                {
+                                                    <i class="bi bi-camera-video me-1 text-danger"></i><a href="@lichPV.DiaDiemHoacLienKet" target="_blank" class="text-decoration-none">Link Online</a>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-geo-alt me-1 text-danger"></i>@lichPV.DiaDiemHoacLienKet
+                                                }
+                                            </div>
+                                        }
+                                    </div>
                                 }
-                                else if (item.TrangThai == "Đạt sơ tuyển")
+
+                                <!-- Tóm tắt nhanh thông tin Kết quả phỏng vấn (nếu có) -->
+                                @if (kq != null)
                                 {
-                                    <span class="badge bg-info text-white px-2 py-1">Đạt sơ tuyển</span>
-                                }
-                                else if (item.TrangThai == "Trúng tuyển")
-                                {
-                                    <span class="badge bg-success px-2 py-1">Trúng tuyển</span>
-                                }
-                                else if (item.TrangThai == "Đã hủy")
-                                {
-                                    <span class="badge bg-secondary px-2 py-1">Đã hủy</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger px-2 py-1">@item.TrangThai</span>
+                                    <div class="mt-2 p-2 rounded small @(kq.KetQua == "Trúng tuyển" ? "bg-success-subtle border border-success" : "bg-danger-subtle border border-danger")">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold @(kq.KetQua == "Trúng tuyển" ? "text-success" : "text-danger")">
+                                                <i class="bi @(kq.KetQua == "Trúng tuyển" ? "bi-check2-circle" : "bi-x-circle") me-1"></i>@kq.KetQua
+                                            </span>
+                                            <span class="badge @(kq.KetQua == "Trúng tuyển" ? "bg-success" : "bg-danger")">@kq.DiemDanhGia đ</span>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(kq.NhanXet))
+                                        {
+                                            <div class="text-muted mt-1 small text-truncate" title="@kq.NhanXet">
+                                                <em>"@kq.NhanXet"</em>
+                                            </div>
+                                        }
+                                    </div>
                                 }
                             </td>
                             <td class="text-center">
-                                @if (item.TrangThai == "Chờ duyệt")
-                                {
-                                    <form asp-action="HuyHoSo" asp-route-id="@item.MaHoSo" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy hồ sơ này không?');">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">Hủy hồ sơ</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">Không thể hủy</span>
-                                }
+                                <div class="d-flex flex-column gap-1">
+                                    <!-- Nút mở Popup Chi tiết tiến trình -->
+                                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalChiTiet_@item.MaHoSo">
+                                        <i class="bi bi-info-circle me-1"></i>Chi tiết
+                                    </button>
+
+                                    <!-- Nút Hủy hồ sơ nếu còn trong giai đoạn Chờ duyệt -->
+                                    @if (item.TrangThai == "Chờ duyệt")
+                                    {
+                                        <form asp-action="HuyHoSo" asp-route-id="@item.MaHoSo" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy hồ sơ này không?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                                <i class="bi bi-x-circle me-1"></i>Hủy hồ sơ
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Không thể hủy</span>
+                                    }
+                                </div>
                             </td>
                         </tr>
+
+                        <!-- MODAL CHI TIẾT TIẾN TRÌNH HỒ SƠ -->
+                        <div class="modal fade" id="modalChiTiet_@item.MaHoSo" tabindex="-1" aria-labelledby="modalLabel_@item.MaHoSo" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                                <div class="modal-content shadow">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title" id="modalLabel_@item.MaHoSo">
+                                            <i class="bi bi-clock-history me-2"></i>Tiến trình hồ sơ #@item.MaHoSo: @item.ViTriTuyenDung?.TenViTri
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <!-- BƯỚC 1: NỘP HỒ SƠ -->
+                                        <div class="d-flex mb-4">
+                                            <div class="me-3 text-center" style="width: 40px;">
+                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="bi bi-file-earmark-arrow-up"></i>
+                                                </div>
+                                                <div class="h-100 border-start border-2 border-primary mx-auto my-1" style="min-height: 40px;"></div>
+                                            </div>
+                                            <div class="flex-grow-1 pb-3">
+                                                <h6 class="fw-bold text-primary mb-1">1. Đã tiếp nhận hồ sơ</h6>
+                                                <div class="text-muted small mb-2"><i class="bi bi-clock me-1"></i>Thời gian: @item.NgayNop.ToString("dd/MM/yyyy HH:mm")</div>
+                                                <div class="p-3 bg-light rounded small">
+                                                    <p class="mb-1"><strong>Vị trí ứng tuyển:</strong> @item.ViTriTuyenDung?.TenViTri</p>
+                                                    <p class="mb-1"><strong>Phòng ban:</strong> @item.ViTriTuyenDung?.PhongBan?.TenPhongBan</p>
+                                                    @if (cvFileName != null)
+                                                    {
+                                                        <p class="mb-0"><strong>CV đính kèm:</strong> <a href="~/uploads/cv/@cvFileName" target="_blank" class="text-danger fw-bold"><i class="bi bi-file-earmark-pdf me-1"></i>Xem lại file CV</a></p>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.ThuGioiThieu))
+                                                    {
+                                                        <p class="mt-2 mb-0"><strong>Thư giới thiệu:</strong> <em>"@item.ThuGioiThieu"</em></p>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- BƯỚC 2: SƠ TUYỂN HỒ SƠ -->
+                                        <div class="d-flex mb-4">
+                                            <div class="me-3 text-center" style="width: 40px;">
+                                                <div class="rounded-circle @(item.TrangThai == "Chờ duyệt" ? "bg-warning text-dark" : (item.TrangThai == "Không đạt sơ tuyển" || item.TrangThai == "Đã hủy" ? "bg-secondary text-white" : "bg-success text-white")) d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="bi @(item.TrangThai == "Chờ duyệt" ? "bi-hourglass-split" : "bi-check-lg")"></i>
+                                                </div>
+                                                <div class="h-100 border-start border-2 border-secondary mx-auto my-1" style="min-height: 40px;"></div>
+                                            </div>
+                                            <div class="flex-grow-1 pb-3">
+                                                <h6 class="fw-bold mb-1 @(item.TrangThai == "Chờ duyệt" ? "text-warning" : "text-success")">
+                                                    2. Đánh giá sơ tuyển
+                                                </h6>
+                                                <div class="text-muted small mb-2">
+                                                    <i class="bi bi-clock me-1"></i>@(item.NgayXuLy.HasValue ? item.NgayXuLy.Value.ToString("dd/MM/yyyy HH:mm") : "Đang chờ nhân sự xử lý")
+                                                </div>
+                                                <div class="p-3 bg-light rounded small">
+                                                    <p class="mb-1"><strong>Trạng thái sơ tuyển:</strong> <span class="fw-bold">@item.TrangThai</span></p>
+                                                    <p class="mb-0"><strong>Nhận xét từ phòng nhân sự:</strong> @(string.IsNullOrEmpty(item.NhanXetSoTuyen) ? "Chưa có nhận xét." : item.NhanXetSoTuyen)</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- BƯỚC 3: LỊCH PHỎNG VẤN -->
+                                        <div class="d-flex mb-4">
+                                            <div class="me-3 text-center" style="width: 40px;">
+                                                <div class="rounded-circle @(lichPV != null ? "bg-info text-white" : "bg-secondary-subtle text-muted") d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="bi bi-calendar-event"></i>
+                                                </div>
+                                                <div class="h-100 border-start border-2 border-secondary mx-auto my-1" style="min-height: 40px;"></div>
+                                            </div>
+                                            <div class="flex-grow-1 pb-3">
+                                                <h6 class="fw-bold mb-1 @(lichPV != null ? "text-info" : "text-muted")">3. Lịch phỏng vấn</h6>
+                                                @if (lichPV != null)
+                                                {
+                                                    <div class="text-muted small mb-2"><i class="bi bi-info-circle me-1"></i>Trạng thái lịch: <span class="badge @(lichPV.TrangThai == "Hoàn thành" ? "bg-success" : "bg-info")">@lichPV.TrangThai</span></div>
+                                                    <div class="p-3 bg-light rounded small border border-info-subtle">
+                                                        <p class="mb-1"><strong>Thời gian bắt đầu:</strong> <span class="text-primary fw-bold">@lichPV.ThoiGianBatDau.ToString("HH:mm - dd/MM/yyyy")</span></p>
+                                                        <p class="mb-1"><strong>Thời gian kết thúc:</strong> @lichPV.ThoiGianKetThuc.ToString("HH:mm - dd/MM/yyyy")</p>
+                                                        <p class="mb-1"><strong>Hình thức:</strong> @(string.IsNullOrEmpty(lichPV.HinhThucPhongVan) ? "Trực tiếp" : lichPV.HinhThucPhongVan)</p>
+                                                        <p class="mb-1">
+                                                            <strong>Địa điểm / Liên kết họp:</strong>
+                                                            @if (!string.IsNullOrEmpty(lichPV.DiaDiemHoacLienKet))
+                                                            {
+                                                                if (lichPV.DiaDiemHoacLienKet.StartsWith("http://") || lichPV.DiaDiemHoacLienKet.StartsWith("https://"))
+                                                                {
+                                                                    <a href="@lichPV.DiaDiemHoacLienKet" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 ms-1">
+                                                                        <i class="bi bi-box-arrow-up-right me-1"></i>Tham gia phòng họp trực tuyến
+                                                                    </a>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="text-dark fw-semibold">@lichPV.DiaDiemHoacLienKet</span>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">Chưa cập nhật</span>
+                                                            }
+                                                        </p>
+                                                        <p class="mb-1"><strong>Người phỏng vấn:</strong> @lichPV.NguoiPhongVan</p>
+                                                        @if (!string.IsNullOrEmpty(lichPV.GhiChu))
+                                                        {
+                                                            <p class="mb-0"><strong>Dặn dò ứng viên:</strong> <span class="text-danger fw-semibold">@lichPV.GhiChu</span></p>
+                                                        }
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="p-3 bg-light rounded small text-muted">
+                                                        <em>Chưa có lịch phỏng vấn được xếp. Vui lòng theo dõi thêm thông tin từ nhà tuyển dụng.</em>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- BƯỚC 4: KẾT QUẢ TUYỂN DỤNG -->
+                                        <div class="d-flex">
+                                            <div class="me-3 text-center" style="width: 40px;">
+                                                <div class="rounded-circle @(kq != null ? (kq.KetQua == "Trúng tuyển" ? "bg-success text-white" : "bg-danger text-white") : "bg-secondary-subtle text-muted") d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="bi bi-trophy"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="fw-bold mb-1 @(kq != null ? (kq.KetQua == "Trúng tuyển" ? "text-success" : "text-danger") : "text-muted")">
+                                                    4. Kết quả tuyển dụng chính thức
+                                                </h6>
+                                                @if (kq != null)
+                                                {
+                                                    <div class="text-muted small mb-2"><i class="bi bi-clock me-1"></i>Ngày công bố: @kq.NgayCapNhat.ToString("dd/MM/yyyy")</div>
+                                                    <div class="p-3 rounded small @(kq.KetQua == "Trúng tuyển" ? "bg-success-subtle border border-success" : "bg-danger-subtle border border-danger")">
+                                                        <p class="mb-1 fs-6">
+                                                            <strong>Quyết định:</strong>
+                                                            <span class="badge @(kq.KetQua == "Trúng tuyển" ? "bg-success" : "bg-danger") fs-6 ms-1">@kq.KetQua</span>
+                                                        </p>
+                                                        <p class="mb-1"><strong>Điểm đánh giá:</strong> <span class="fw-bold">@kq.DiemDanhGia / 100 điểm</span></p>
+                                                        <p class="mb-0"><strong>Nhận xét từ hội đồng tuyển dụng:</strong> @(string.IsNullOrEmpty(kq.NhanXet) ? "Không có nhận xét." : kq.NhanXet)</p>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="p-3 bg-light rounded small text-muted">
+                                                        <em>Chưa có kết quả tuyển dụng chính thức.</em>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer bg-light">
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     }
                 </tbody>
             </table>

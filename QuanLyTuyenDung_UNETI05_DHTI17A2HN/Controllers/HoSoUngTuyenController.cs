@@ -53,7 +53,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             var now = DateTime.Now;
-            if (viTri.TrangThai != "Đang tuyển" || now < viTri.NgayBatDauNhanHoSo || now > viTri.HanNopHoSo)
+            if (viTri.TrangThai != "Đang tuyển" || now.Date < viTri.NgayBatDauNhanHoSo.Date || now.Date > viTri.HanNopHoSo.Date)
             {
                 TempData["ErrorMessage"] = "Vị trí này hiện không nhận hồ sơ (hết hạn hoặc chưa mở).";
                 return RedirectToAction("Index", "Home");
@@ -101,6 +101,28 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
                 return RedirectToAction("CapNhatHoSo", "UngVien");
             }
 
+            // 1. Kiểm tra vị trí tuyển dụng và hạn nộp (cho phép nộp đến hết 23:59:59 của ngày hết hạn)
+            var viTri = await _context.ViTriTuyenDung.FindAsync(model.MaViTri);
+            var now = DateTime.Now;
+            if (viTri == null || viTri.TrangThai != "Đang tuyển" || now.Date < viTri.NgayBatDauNhanHoSo.Date || now.Date > viTri.HanNopHoSo.Date)
+            {
+                TempData["ErrorMessage"] = "Vị trí tuyển dụng không nhận hồ sơ hoặc đã hết hạn.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // 2. Chặn nộp trùng lặp cho cùng một vị trí
+            bool daNop = await _context.HoSoUngTuyen.AnyAsync(h =>
+                h.MaUngVien == ungVien.MaUngVien &&
+                h.MaViTri == model.MaViTri &&
+                h.TrangThai != "Đã hủy" &&
+                h.TrangThai != "Không đạt sơ tuyển" &&
+                h.TrangThai != "Không trúng tuyển");
+
+            if (daNop)
+            {
+                TempData["ErrorMessage"] = "Bạn đã có hồ sơ đang xử lý cho vị trí này.";
+                return RedirectToAction(nameof(HoSoCuaToi));
+            }
             model.MaUngVien = ungVien.MaUngVien;
             model.NgayNop = DateTime.Now;
             model.TrangThai = "Chờ duyệt";
@@ -131,7 +153,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
 
             // Gửi email xác nhận nộp hồ sơ thành công (chạy nền để người dùng không phải chờ tải trang)
-            var viTri = await _context.ViTriTuyenDung.FindAsync(model.MaViTri);
+            // Tái sử dụng thông tin vị trí đã kiểm tra ở trên
             var tenViTri = viTri?.TenViTri ?? "Vị trí tuyển dụng";
             _ = Task.Run(() => EmailHelper.SendThongBaoNopHoSoAsync(
                 ungVien.Email, ungVien.HoTen, tenViTri, model.NgayNop, _configuration));

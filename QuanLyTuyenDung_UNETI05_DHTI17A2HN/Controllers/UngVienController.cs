@@ -16,22 +16,6 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
         }
 
         // ==========================================
-        // BẮT ĐẦU TEST LOGIN (BỎ QUA ĐĂNG NHẬP ĐỂ TEST)
-        // ==========================================
-        [HttpGet]
-        public IActionResult TestLogin()
-        {
-            // Tự động gán Session đóng vai tài khoản Ứng viên số 3
-            HttpContext.Session.SetString("MaTaiKhoan", "3");
-            HttpContext.Session.SetString("HoTen", "Ứng Viên Test UNETI");
-            HttpContext.Session.SetString("VaiTro", "Ứng viên");
-
-            TempData["SuccessMessage"] = "Đã giả lập đăng nhập thành công tài khoản Ứng viên #3!";
-            return RedirectToAction(nameof(ThongTinCaNhan));
-        }
-        // ==========================================
-        // KẾT THÚC TEST LOGIN 
-        // ==========================================
 
         // GET: Xem chi tiết thông tin hồ sơ ứng viên
         [HttpGet]
