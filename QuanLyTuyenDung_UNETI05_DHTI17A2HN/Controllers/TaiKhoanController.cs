@@ -142,7 +142,7 @@ namespace QuanLyTuyenDung_UNETI05_DHTI17A2HN.Controllers
             }
             if (taiKhoan.VaiTro == "Nhân sự")
             {
-                return RedirectToAction("DanhSachHoSo", "HoSoUngTuyen");
+                return RedirectToAction("QuanLyDanhsach", "HoSoUngTuyen");
             }
 
             return RedirectToAction("Index", "Home");
